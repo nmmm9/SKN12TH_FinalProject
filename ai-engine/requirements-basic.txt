@@ -1,0 +1,36 @@
+# 기본 웹 프레임워크 (가벼운 버전)
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# 기본 라이브러리
+numpy==1.25.2
+pandas==2.1.4
+
+# HTTP & API
+httpx==0.25.2
+aiohttp==3.9.1
+requests==2.31.0
+
+# 파일 처리
+python-multipart==0.0.6
+aiofiles==23.2.1
+
+# 보안 & 인증
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+cryptography==41.0.8
+
+# 로깅 & 모니터링
+loguru==0.7.2
+
+# 유틸리티
+python-dotenv==1.0.0
+pyyaml==6.0.1
+click==8.1.7
+rich==13.7.0
+
+# 성능 최적화
+orjson==3.9.10
+ujson==5.8.0

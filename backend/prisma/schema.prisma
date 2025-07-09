@@ -1,0 +1,184 @@
+// DdalKkak 단순화된 Prisma Schema
+// 핵심 기능 중심 Multi-tenant 구조
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== 1. 테넌트 (Multi-tenant 핵심) =====
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String   @db.VarChar(100)
+  slug      String   @unique @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // 관계
+  users             User[]
+  meetings          Meeting[]
+  tasks             Task[]
+  realtimeSessions  RealtimeSession[]
+  integrations      Integration[]
+  
+  @@map("tenants")
+}
+
+// ===== 2. 사용자 (테넌트별 격리) =====
+model User {
+  id           String   @id @default(uuid())
+  tenantId     String   @map("tenant_id")
+  email        String   @db.VarChar(255)
+  name         String   @db.VarChar(100)
+  role         UserRole @default(MEMBER)
+  slackUserId  String?  @map("slack_user_id") @db.VarChar(50)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  
+  // 관계
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  hostedMeetings  Meeting[] @relation("MeetingHost")
+  assignedTasks   Task[]    @relation("TaskAssignee")
+  createdTasks    Task[]    @relation("TaskCreator")
+  integrations    Integration[]
+  realtimeSessions RealtimeSession[]
+  
+  @@unique([tenantId, email])
+  @@unique([tenantId, slackUserId])
+  @@map("users")
+}
+
+// ===== 3. 회의 (STT + AI 분석 통합) =====
+model Meeting {
+  id               String    @id @default(uuid())
+  tenantId         String    @map("tenant_id")
+  title            String    @db.VarChar(200)
+  hostId           String    @map("host_id")
+  
+  // 오디오 파일 정보
+  audioFileUrl     String?   @map("audio_file_url") @db.Text
+  audioDuration    Int?      @map("audio_duration")
+  
+  // STT 결과
+  sttStatus        SttStatus @default(PENDING) @map("stt_status")
+  transcriptText   String?   @map("transcript_text") @db.Text
+  transcriptSegments Json?   @map("transcript_segments")
+  speakerLabels    Json?     @map("speaker_labels")
+  
+  // AI 분석 결과
+  aiSummary        String?   @map("ai_summary") @db.Text
+  aiActionItems    Json?     @map("ai_action_items")
+  
+  // 외부 연동
+  slackMessageTs   String?   @map("slack_message_ts") @db.VarChar(50)
+  
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  
+  // 관계
+  tenant           Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  host             User      @relation("MeetingHost", fields: [hostId], references: [id])
+  tasks            Task[]
+  realtimeSessions RealtimeSession[]
+  
+  @@map("meetings")
+}
+
+// ===== 4. 업무 (AI 생성 + 수동) =====
+model Task {
+  id            String     @id @default(uuid())
+  tenantId      String     @map("tenant_id")
+  meetingId     String?    @map("meeting_id")
+  title         String     @db.VarChar(200)
+  description   String?    @db.Text
+  status        TaskStatus @default(TODO)
+  assigneeId    String?    @map("assignee_id")
+  createdById   String?    @map("created_by_id")
+  dueDate       DateTime?  @map("due_date")
+  isAiGenerated Boolean    @default(false) @map("is_ai_generated")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  
+  // 관계
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  meeting       Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+  assignee      User?    @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  creator       User?    @relation("TaskCreator", fields: [createdById], references: [id])
+  
+  @@map("tasks")
+}
+
+// ===== 5. 실시간 STT 세션 =====
+model RealtimeSession {
+  id        String        @id @default(uuid())
+  tenantId  String        @map("tenant_id")
+  meetingId String?       @map("meeting_id")
+  hostId    String        @map("host_id")
+  socketId  String        @map("socket_id") @db.VarChar(100)
+  status    SessionStatus @default(ACTIVE)
+  startedAt DateTime      @default(now()) @map("started_at")
+  endedAt   DateTime?     @map("ended_at")
+  
+  // 관계
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  meeting   Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+  host      User     @relation(fields: [hostId], references: [id])
+  
+  @@map("realtime_sessions")
+}
+
+// ===== 6. 외부 연동 (최소한) =====
+model Integration {
+  id           String            @id @default(uuid())
+  tenantId     String            @map("tenant_id")
+  userId       String            @map("user_id")
+  serviceType  IntegrationService @map("service_type")
+  accessToken  String?           @map("access_token") @db.Text
+  isActive     Boolean           @default(true) @map("is_active")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  
+  // 관계
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([tenantId, userId, serviceType])
+  @@map("integrations")
+}
+
+// ===== ENUMS =====
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum SttStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum SessionStatus {
+  ACTIVE
+  ENDED
+  ERROR
+}
+
+enum IntegrationService {
+  SLACK
+  NOTION
+  JIRA
+}

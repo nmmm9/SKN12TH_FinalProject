@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram name="DdalKkak AWS Architecture">
+    <mxGraphModel dx="2400" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1600">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- 제목 -->
+        <mxCell id="title" value="🚀 DdalKkak Cloud Native Architecture" style="text;fontSize=24;fontStyle=1;fillColor=#1565C0;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="900" y="20" width="600" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- 사용자 레이어 -->
+        <mxCell id="users-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="100" width="2300" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="users-title" value="👥 Users &amp; Clients" style="text;fontSize=16;fontStyle=1;fillColor=#1976d2;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="110" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- 사용자들 -->
+        <mxCell id="slack-users" value="👤 Slack Users" style="rounded=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="web-users" value="💻 Web Users" style="rounded=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="chrome-users" value="🌐 Chrome Extension" style="rounded=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="mobile-users" value="📱 Mobile Users" style="rounded=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="900" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Edge Layer -->
+        <mxCell id="edge-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="250" width="2300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-title" value="🌐 Edge Layer" style="text;fontSize=16;fontStyle=1;fillColor=#f57c00;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="260" width="150" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cloudfront" value="🔗 CloudFront CDN" style="rounded=1;fillColor=#ffcc80;strokeColor=#f57c00;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="290" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="waf" value="🛡️ Web Application Firewall" style="rounded=1;fillColor=#ffcc80;strokeColor=#f57c00;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="290" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="route53" value="🌍 Route 53 DNS" style="rounded=1;fillColor=#ffcc80;strokeColor=#f57c00;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="290" width="150" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Load Balancer -->
+        <mxCell id="lb-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="380" width="2300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="lb-title" value="⚖️ Load Balancing" style="text;fontSize=16;fontStyle=1;fillColor=#7b1fa2;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="390" width="180" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="alb" value="🔄 Application Load Balancer" style="rounded=1;fillColor=#ce93d8;strokeColor=#7b1fa2;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="420" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="nlb" value="📡 Network Load Balancer&lt;br/&gt;(WebSocket)" style="rounded=1;fillColor=#ce93d8;strokeColor=#7b1fa2;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="420" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- API Gateway -->
+        <mxCell id="api-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e8;strokeColor=#2e7d32;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="510" width="2300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="api-title" value="🔀 API Gateway" style="text;fontSize=16;fontStyle=1;fillColor=#2e7d32;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="520" width="150" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="api-gateway" value="🚪 API Gateway&lt;br/&gt;REST + WebSocket" style="rounded=1;fillColor=#a5d6a7;strokeColor=#2e7d32;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="550" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="cognito" value="🔐 Cognito&lt;br/&gt;Authentication" style="rounded=1;fillColor=#a5d6a7;strokeColor=#2e7d32;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="550" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="lambda-auth" value="⚡ Lambda&lt;br/&gt;Auth Functions" style="rounded=1;fillColor=#a5d6a7;strokeColor=#2e7d32;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="550" width="150" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Backend Services -->
+        <mxCell id="backend-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f57f17;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="640" width="1100" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-title" value="🏗️ Backend Services (ECS Fargate)" style="text;fontSize=16;fontStyle=1;fillColor=#f57f17;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="650" width="300" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- Core Services -->
+        <mxCell id="core-services" value="Core Services" style="text;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="690" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="user-service" value="👤 User Service&lt;br/&gt;ECS Fargate" style="rounded=1;fillColor=#fff176;strokeColor=#f57f17;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="720" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="meeting-service" value="🎯 Meeting Service&lt;br/&gt;ECS Fargate" style="rounded=1;fillColor=#fff176;strokeColor=#f57f17;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="720" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="task-service" value="📋 Task Service&lt;br/&gt;ECS Fargate" style="rounded=1;fillColor=#fff176;strokeColor=#f57f17;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="720" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="project-service" value="📊 Project Service&lt;br/&gt;ECS Fargate" style="rounded=1;fillColor=#fff176;strokeColor=#f57f17;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="720" width="120" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Integration Services -->
+        <mxCell id="integration-services" value="Integration Services" style="text;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="780" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="slack-service" value="📱 Slack Service&lt;br/&gt;ECS Fargate" style="rounded=1;fillColor=#fff176;strokeColor=#f57f17;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="810" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="notion-service" value="📝 Notion Service&lt;br/&gt;ECS Fargate" style="rounded=1;fillColor=#fff176;strokeColor=#f57f17;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="810" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="jira-service" value="🎯 Jira Service&lt;br/&gt;ECS Fargate" style="rounded=1;fillColor=#fff176;strokeColor=#f57f17;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="810" width="120" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Message Queue -->
+        <mxCell id="queue-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#01579b;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="720" width="400" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="queue-title" value="📬 Message Queue" style="text;fontSize=14;fontStyle=1;fillColor=#01579b;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="710" y="730" width="150" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="sqs" value="📨 SQS&lt;br/&gt;Job Queue" style="rounded=1;fillColor=#90caf9;strokeColor=#01579b;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="760" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="sns" value="📢 SNS&lt;br/&gt;Notifications" style="rounded=1;fillColor=#90caf9;strokeColor=#01579b;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="840" y="760" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kinesis" value="🌊 Kinesis&lt;br/&gt;Real-time Stream" style="rounded=1;fillColor=#90caf9;strokeColor=#01579b;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="960" y="760" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="eventbridge" value="🔄 EventBridge&lt;br/&gt;Event Bus" style="rounded=1;fillColor=#90caf9;strokeColor=#01579b;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="810" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="stepfunctions" value="🔗 Step Functions&lt;br/&gt;Workflow" style="rounded=1;fillColor=#90caf9;strokeColor=#01579b;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="860" y="810" width="120" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- AI Engine Cluster -->
+        <mxCell id="ai-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#c62828;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="640" width="1150" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-title" value="🤖 AI Engine Cluster" style="text;fontSize=16;fontStyle=1;fillColor=#c62828;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="650" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- AI Services -->
+        <mxCell id="ai-services" value="AI Services" style="text;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="690" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stt-service" value="🎤 STT Service&lt;br/&gt;EC2 GPU Instance" style="rounded=1;fillColor=#ffcdd2;strokeColor=#c62828;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="720" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="llm-service" value="🧠 LLM Service&lt;br/&gt;EC2 GPU Instance" style="rounded=1;fillColor=#ffcdd2;strokeColor=#c62828;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="720" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="embedding-service" value="🔍 Embedding Service&lt;br/&gt;EC2 GPU Instance" style="rounded=1;fillColor=#ffcdd2;strokeColor=#c62828;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="720" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="task-master" value="🎯 Task Master&lt;br/&gt;EC2 GPU Instance" style="rounded=1;fillColor=#ffcdd2;strokeColor=#c62828;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="720" width="140" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- GPU Infrastructure -->
+        <mxCell id="gpu-infra" value="GPU Infrastructure" style="text;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="780" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="gpu-node1" value="🚀 GPU Node 1&lt;br/&gt;NVIDIA A100 80GB" style="rounded=1;fillColor=#ffcdd2;strokeColor=#c62828;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="810" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="gpu-node2" value="🚀 GPU Node 2&lt;br/&gt;NVIDIA A100 80GB" style="rounded=1;fillColor=#ffcdd2;strokeColor=#c62828;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="810" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="gpu-node3" value="🚀 GPU Node 3&lt;br/&gt;NVIDIA A100 80GB" style="rounded=1;fillColor=#ffcdd2;strokeColor=#c62828;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="810" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="gpu-scheduler" value="⚙️ GPU Scheduler&lt;br/&gt;Auto Scaling Group" style="rounded=1;fillColor=#ffcdd2;strokeColor=#c62828;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="810" width="140" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Layer -->
+        <mxCell id="data-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f2f1;strokeColor=#00695c;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="890" width="2300" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="data-title" value="🗄️ Data Layer" style="text;fontSize=16;fontStyle=1;fillColor=#00695c;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="900" width="150" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- Primary Database -->
+        <mxCell id="primary-db" value="Primary Database" style="text;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="940" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rds" value="🗄️ RDS PostgreSQL&lt;br/&gt;Multi-AZ" style="rounded=1;fillColor=#80cbc4;strokeColor=#00695c;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="970" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="rds-replica" value="🔄 Read Replica&lt;br/&gt;Cross-Region" style="rounded=1;fillColor=#80cbc4;strokeColor=#00695c;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1030" width="140" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Cache Layer -->
+        <mxCell id="cache-layer" value="Cache Layer" style="text;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="940" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="redis" value="⚡ ElastiCache Redis&lt;br/&gt;Cluster Mode" style="rounded=1;fillColor=#80cbc4;strokeColor=#00695c;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="970" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="memcached" value="💾 ElastiCache&lt;br/&gt;Memcached" style="rounded=1;fillColor=#80cbc4;strokeColor=#00695c;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1030" width="140" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Storage -->
+        <mxCell id="storage" value="Storage" style="text;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="940" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="📁 S3 Bucket&lt;br/&gt;Audio Files" style="rounded=1;fillColor=#80cbc4;strokeColor=#00695c;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="970" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="efs" value="📂 EFS&lt;br/&gt;Shared Storage" style="rounded=1;fillColor=#80cbc4;strokeColor=#00695c;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="1030" width="140" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Vector Database -->
+        <mxCell id="vector-db" value="Vector Database" style="text;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="940" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="opensearch" value="🔍 OpenSearch&lt;br/&gt;Vector Search" style="rounded=1;fillColor=#80cbc4;strokeColor=#00695c;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="970" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="chroma" value="🎨 ChromaDB&lt;br/&gt;EC2 Instance" style="rounded=1;fillColor=#80cbc4;strokeColor=#00695c;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="1030" width="140" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- External Services -->
+        <mxCell id="external-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#880e4f;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="880" y="890" width="600" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="external-title" value="🔗 External Services" style="text;fontSize=16;fontStyle=1;fillColor=#880e4f;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="890" y="900" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="slack-api" value="📱 Slack API&lt;br/&gt;Bot Integration" style="rounded=1;fillColor=#f8bbd9;strokeColor=#880e4f;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="900" y="940" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="notion-api" value="📝 Notion API&lt;br/&gt;Page Creation" style="rounded=1;fillColor=#f8bbd9;strokeColor=#880e4f;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="940" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="jira-api" value="🎯 Jira API&lt;br/&gt;Ticket Management" style="rounded=1;fillColor=#f8bbd9;strokeColor=#880e4f;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="940" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="google-api" value="📅 Google APIs&lt;br/&gt;Calendar + Drive" style="rounded=1;fillColor=#f8bbd9;strokeColor=#880e4f;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="940" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="github-api" value="🐙 GitHub API&lt;br/&gt;Code Integration" style="rounded=1;fillColor=#f8bbd9;strokeColor=#880e4f;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="900" y="1000" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="openai-api" value="🤖 OpenAI API&lt;br/&gt;GPT Integration" style="rounded=1;fillColor=#f8bbd9;strokeColor=#880e4f;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="1000" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="anthropic-api" value="🧠 Anthropic API&lt;br/&gt;Claude Integration" style="rounded=1;fillColor=#f8bbd9;strokeColor=#880e4f;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="1000" width="120" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Monitoring & Observability -->
+        <mxCell id="monitoring-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f8e9;strokeColor=#33691e;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1520" y="890" width="400" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="monitoring-title" value="📊 Monitoring &amp; Observability" style="text;fontSize=16;fontStyle=1;fillColor=#33691e;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1530" y="900" width="250" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cloudwatch" value="📊 CloudWatch&lt;br/&gt;Metrics &amp; Logs" style="rounded=1;fillColor=#c5e1a5;strokeColor=#33691e;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="940" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="xray" value="🔍 X-Ray&lt;br/&gt;Distributed Tracing" style="rounded=1;fillColor=#c5e1a5;strokeColor=#33691e;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="940" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="cloudtrail" value="🕵️ CloudTrail&lt;br/&gt;Audit Logs" style="rounded=1;fillColor=#c5e1a5;strokeColor=#33691e;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="1000" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="config" value="⚙️ Config&lt;br/&gt;Compliance" style="rounded=1;fillColor=#c5e1a5;strokeColor=#33691e;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="1000" width="120" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Security -->
+        <mxCell id="security-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#283593;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1960" y="890" width="390" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="security-title" value="🛡️ Security" style="text;fontSize=16;fontStyle=1;fillColor=#283593;fontColor=white;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1970" y="900" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="iam" value="🔐 IAM&lt;br/&gt;Roles &amp; Policies" style="rounded=1;fillColor=#c5cae9;strokeColor=#283593;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1980" y="940" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="secrets-manager" value="🔑 Secrets Manager&lt;br/&gt;Key Management" style="rounded=1;fillColor=#c5cae9;strokeColor=#283593;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="2120" y="940" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="kms" value="🔒 KMS&lt;br/&gt;Encryption" style="rounded=1;fillColor=#c5cae9;strokeColor=#283593;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1980" y="1000" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="vpc" value="🏢 VPC&lt;br/&gt;Network Security" style="rounded=1;fillColor=#c5cae9;strokeColor=#283593;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="2120" y="1000" width="120" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Availability Zones -->
+        <mxCell id="az-info" value="🌐 Multi-AZ Deployment&lt;br/&gt;• Availability Zone A: Primary Services&lt;br/&gt;• Availability Zone B: Backup &amp; Failover&lt;br/&gt;• Availability Zone C: Read Replicas" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="50" y="1130" width="300" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Performance Metrics -->
+        <mxCell id="performance-info" value="⚡ Performance Targets&lt;br/&gt;• STT Latency: &lt;2 seconds&lt;br/&gt;• LLM Processing: &lt;60 seconds&lt;br/&gt;• End-to-End Workflow: &lt;3 minutes&lt;br/&gt;• Concurrent Users: 1,000+&lt;br/&gt;• Availability: 99.9%" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1130" width="300" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Cost Optimization -->
+        <mxCell id="cost-info" value="💰 Cost Optimization&lt;br/&gt;• Spot Instances for GPU workloads&lt;br/&gt;• Auto Scaling Groups&lt;br/&gt;• Reserved Instances for stable workloads&lt;br/&gt;• S3 Intelligent Tiering&lt;br/&gt;• CloudWatch cost monitoring" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="750" y="1130" width="300" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- 주요 연결선들 -->
+        
+        <!-- Users to Edge -->
+        <mxCell id="conn1" value="" style="endArrow=classic;html=1;strokeColor=#1976d2;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="220" as="sourcePoint" />
+            <mxPoint x="500" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Edge to Load Balancer -->
+        <mxCell id="conn2" value="" style="endArrow=classic;html=1;strokeColor=#f57c00;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="350" as="sourcePoint" />
+            <mxPoint x="500" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Load Balancer to API Gateway -->
+        <mxCell id="conn3" value="" style="endArrow=classic;html=1;strokeColor=#7b1fa2;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="480" as="sourcePoint" />
+            <mxPoint x="400" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- API Gateway to Backend Services -->
+        <mxCell id="conn4" value="" style="endArrow=classic;html=1;strokeColor=#2e7d32;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="375" y="610" as="sourcePoint" />
+            <mxPoint x="200" y="720" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Backend to Queue -->
+        <mxCell id="conn5" value="" style="endArrow=classic;html=1;strokeColor=#f57f17;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="770" as="sourcePoint" />
+            <mxPoint x="720" y="780" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Queue to AI Services -->
+        <mxCell id="conn6" value="" style="endArrow=classic;html=1;strokeColor=#01579b;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1100" y="780" as="sourcePoint" />
+            <mxPoint x="1220" y="745" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- AI Services to GPU -->
+        <mxCell id="conn7" value="" style="endArrow=classic;html=1;strokeColor=#c62828;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1290" y="770" as="sourcePoint" />
+            <mxPoint x="1290" y="810" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Backend to Database -->
+        <mxCell id="conn8" value="" style="endArrow=classic;html=1;strokeColor=#f57f17;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="200" y="770" as="sourcePoint" />
+            <mxPoint x="150" y="970" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Backend to External Services -->
+        <mxCell id="conn9" value="" style="endArrow=classic;html=1;strokeColor=#f57f17;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="860" as="sourcePoint" />
+            <mxPoint x="900" y="965" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

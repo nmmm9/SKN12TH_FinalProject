@@ -1,0 +1,343 @@
+// DdalKkak 프로젝트 ERD (성능 최적화 버전)
+// 지능형 AI Agent Slack App을 위한 고성능 데이터베이스 설계
+
+Project DdalKkak {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # DdalKkak - 지능형 AI Agent Slack App (성능 최적화 버전)
+    
+    ## 🚀 핵심 개선사항
+    - 실시간 STT 스트리밍 아키텍처로 변경
+    - audio_chunks 테이블 제거 (메모리에서 실시간 처리)
+    - 인덱스 최적화 및 성능 개선
+    - JSONB 사용 최소화
+    - 보안 강화 (토큰 암호화)
+    
+    ## ⚡ 핵심 기능
+    - 3가지 음성 입력 방식 (파일 업로드 + 실시간 STT + 온라인 회의 연동)
+    - AI 기반 업무 분해 및 팀원 배정
+    - Slack/Notion/Jira 완전 자동 연동
+    - 고성능 실시간 협업 워크플로우
+  '''
+}
+
+// ===== 팀 및 사용자 관리 =====
+Table teams {
+  id uuid [pk, note: '팀 고유 식별자']
+  name varchar(100) [not null, note: '팀명']
+  slack_workspace_id varchar(50) [unique, not null, note: 'Slack 워크스페이스 ID']
+  created_at timestamp [default: `NOW()`, note: '생성일시']
+  
+  // 인덱스 최적화
+  indexes {
+    slack_workspace_id [name: 'idx_teams_slack_workspace']
+    (name, created_at) [name: 'idx_teams_name_created']
+  }
+  
+  note: '팀 정보 관리 테이블'
+}
+
+Table users {
+  id uuid [pk, note: '사용자 고유 식별자']
+  team_id uuid [not null, note: '소속 팀']
+  slack_user_id varchar(50) [not null, note: 'Slack 사용자 ID']
+  name varchar(100) [not null, note: '사용자명']
+  email varchar(100) [note: '이메일']
+  role varchar(20) [default: 'member', note: '역할: admin, pm, member']
+  
+  // 성능 최적화를 위해 JSONB 대신 정규화된 구조 사용
+  primary_skills varchar(200) [note: '주요 기술 스택 (콤마 구분)']
+  experience_level smallint [default: 1, note: '경험 레벨 (1-10)']
+  max_workload smallint [default: 40, note: '최대 업무량 (주당 시간)']
+  current_workload smallint [default: 0, note: '현재 업무량']
+  
+  is_active boolean [default: true, note: '활성 상태']
+  created_at timestamp [default: `NOW()`, note: '생성일시']
+  updated_at timestamp [default: `NOW()`, note: '수정일시']
+  
+  // 인덱스 최적화
+  indexes {
+    (team_id, slack_user_id) [unique, name: 'idx_users_team_slack']
+    slack_user_id [name: 'idx_users_slack_id']
+    (team_id, is_active) [name: 'idx_users_team_active']
+    email [name: 'idx_users_email']
+  }
+  
+  note: '팀원 정보 및 역량 관리 테이블 (성능 최적화)'
+}
+
+// ===== 회의 및 기획안 관리 =====
+Table meetings {
+  id uuid [pk, note: '회의 고유 식별자']
+  team_id uuid [not null, note: '주최 팀']
+  title varchar(200) [not null, note: '회의 제목']
+  organizer_id uuid [not null, note: '주최자']
+  
+  // 3가지 입력 방식 지원
+  input_type varchar(20) [not null, note: '입력 방식: file_upload, real_time_stt, online_platform']
+  
+  // 파일 업로드 방식용
+  audio_file_url text [note: '음성 파일 저장 경로 (S3/MinIO)']
+  
+  // 온라인 플랫폼 연동용
+  platform_type varchar(20) [note: '플랫폼: google_meet, slack_huddles, zoom']
+  platform_meeting_id varchar(100) [note: '외부 플랫폼 회의 ID']
+  
+  // AI 처리 결과
+  raw_transcript text [note: 'STT 변환된 전체 텍스트']
+  structured_content text [note: 'AI 구조화된 기획안 [목적/요구사항/제약사항/우선순위]']
+  
+  // 상태 및 시간 관리
+  status varchar(20) [default: 'processing', note: '상태: processing, completed, failed']
+  participants_count smallint [default: 0, note: '참석자 수']
+  
+  created_at timestamp [default: `NOW()`, note: '생성일시']
+  started_at timestamp [note: '회의 시작 시간']
+  ended_at timestamp [note: '회의 종료 시간']
+  processed_at timestamp [note: 'AI 처리 완료 시간']
+  
+  // 인덱스 최적화
+  indexes {
+    (team_id, status, created_at) [name: 'idx_meetings_team_status_created']
+    (organizer_id, created_at) [name: 'idx_meetings_organizer_created']
+    platform_meeting_id [name: 'idx_meetings_platform_id']
+    input_type [name: 'idx_meetings_input_type']
+  }
+  
+  note: '회의 정보 및 처리 결과 관리 (3가지 입력 방식 최적화)'
+}
+
+// ===== 실시간 STT 세션 관리 (대폭 간소화) =====
+Table realtime_sessions {
+  id uuid [pk, note: '실시간 세션 고유 식별자']
+  meeting_id uuid [not null, note: '연결된 회의']
+  session_type varchar(20) [not null, note: '세션 타입: manual_recording, google_meet, slack_huddles']
+  
+  // 세션 상태 (WebSocket 정보는 메모리에서 관리)
+  status varchar(20) [default: 'active', note: '상태: active, paused, completed, failed']
+  
+  // 성능 지표만 저장 (상세 청크 데이터는 메모리에서 처리)
+  total_duration_seconds smallint [default: 0, note: '총 녹음 시간 (초)']
+  final_transcript text [note: '최종 통합 텍스트 (회의 종료 시)']
+  
+  // 실시간 STT 성능 지표
+  stt_latency_ms smallint [note: '평균 STT 응답 지연시간 (밀리초)']
+  stt_accuracy_score decimal(3,2) [note: 'STT 정확도 점수 (0.00-1.00)']
+  
+  created_at timestamp [default: `NOW()`, note: '생성일시']
+  started_at timestamp [default: `NOW()`, note: '시작일시']
+  completed_at timestamp [note: '완료일시']
+  
+  // 인덱스 최적화
+  indexes {
+    (meeting_id, status) [name: 'idx_realtime_sessions_meeting_status']
+    (session_type, created_at) [name: 'idx_realtime_sessions_type_created']
+  }
+  
+  note: '실시간 STT 세션 상태 관리 (성능 최적화)'
+}
+
+// ===== 온라인 회의 플랫폼 연동 설정 =====
+Table platform_integrations {
+  id uuid [pk, note: '플랫폼 연동 고유 식별자']
+  team_id uuid [not null, note: '연동 팀']
+  platform_type varchar(20) [not null, note: '플랫폼: google_meet, slack_huddles, zoom']
+  
+  // 상태 관리
+  integration_status varchar(20) [default: 'active', note: '연동 상태: active, disabled, error']
+  
+  // 보안 강화: 암호화된 토큰 저장
+  encrypted_access_token text [note: '암호화된 액세스 토큰 (AES-256)']
+  encrypted_refresh_token text [note: '암호화된 리프레시 토큰 (AES-256)']
+  token_expires_at timestamp [note: '토큰 만료 시간']
+  
+  // 웹훅 설정
+  webhook_url text [note: '웹훅 URL']
+  webhook_secret varchar(100) [note: '웹훅 시크릿']
+  
+  // 플랫폼별 설정 (최소한으로 사용)
+  platform_settings varchar(500) [note: '플랫폼별 간단 설정 (JSON 문자열)']
+  
+  created_at timestamp [default: `NOW()`, note: '생성일시']
+  updated_at timestamp [default: `NOW()`, note: '수정일시']
+  last_sync_at timestamp [note: '마지막 동기화 시간']
+  
+  // 인덱스 최적화
+  indexes {
+    (team_id, platform_type) [unique, name: 'idx_platform_integrations_team_platform']
+    (integration_status, updated_at) [name: 'idx_platform_integrations_status_updated']
+  }
+  
+  note: '외부 플랫폼 연동 관리 (보안 및 성능 최적화)'
+}
+
+// ===== 업무 및 배정 관리 =====
+Table tasks {
+  id uuid [pk, note: '업무 고유 식별자']
+  meeting_id uuid [not null, note: '회의에서 생성된 업무']
+  parent_task_id uuid [note: '상위 업무 (Epic > Story > Task 구조)']
+  
+  // 업무 기본 정보
+  title varchar(200) [not null, note: '업무 제목']
+  description text [note: '업무 상세 설명']
+  task_type varchar(20) [default: 'task', note: '업무 타입: epic, story, task']
+  
+  // AI 배정을 위한 정보
+  complexity_score smallint [note: '복잡도 점수 (1-10)']
+  estimated_hours smallint [note: '예상 소요 시간']
+  required_skills varchar(200) [note: '필요 기술 스택 (콤마 구분)']
+  
+  // 배정 및 상태
+  assigned_to uuid [note: '담당자']
+  status varchar(20) [default: 'pending', note: '상태: pending, in_progress, completed, cancelled']
+  priority varchar(10) [note: '우선순위: high, medium, low']
+  
+  // 외부 연동
+  jira_ticket_id varchar(50) [note: 'Jira 티켓 ID']
+  notion_page_id varchar(50) [note: 'Notion 페이지 ID']
+  
+  // 시간 관리
+  created_at timestamp [default: `NOW()`, note: '생성일시']
+  updated_at timestamp [default: `NOW()`, note: '수정일시']
+  due_date timestamp [note: '마감일']
+  completed_at timestamp [note: '완료일시']
+  
+  // 인덱스 최적화
+  indexes {
+    (meeting_id, status, priority) [name: 'idx_tasks_meeting_status_priority']
+    (assigned_to, status, due_date) [name: 'idx_tasks_assigned_status_due']
+    (task_type, created_at) [name: 'idx_tasks_type_created']
+    parent_task_id [name: 'idx_tasks_parent']
+    jira_ticket_id [name: 'idx_tasks_jira']
+  }
+  
+  note: 'AI 분해 업무 및 스마트 배정 결과 (성능 최적화)'
+}
+
+// ===== 업무 의존성 관리 =====
+Table task_dependencies {
+  id uuid [pk, note: '의존성 고유 식별자']
+  task_id uuid [not null, note: '현재 업무']
+  depends_on_task_id uuid [not null, note: '의존하는 업무']
+  dependency_type varchar(20) [default: 'blocking', note: '의존성 타입: blocking, related']
+  created_at timestamp [default: `NOW()`, note: '생성일시']
+  
+  // 인덱스 최적화
+  indexes {
+    (task_id, depends_on_task_id) [unique, name: 'idx_task_dependencies_unique']
+    depends_on_task_id [name: 'idx_task_dependencies_depends_on']
+  }
+  
+  note: '업무 간 의존성 관계 관리'
+}
+
+// ===== 팀원 성과 추적 =====
+Table user_performance {
+  id uuid [pk, note: '성과 기록 고유 식별자']
+  user_id uuid [not null, note: '사용자']
+  task_id uuid [not null, note: '완료한 업무']
+  
+  // 성과 지표
+  actual_hours smallint [note: '실제 소요 시간 (시간)']
+  estimated_hours smallint [note: '예상 소요 시간 (시간)']
+  efficiency_score decimal(3,2) [note: '효율성 점수 (actual/estimated)']
+  quality_score smallint [note: '업무 품질 점수 (1-10)']
+  
+  // 피드백 (간결하게)
+  feedback varchar(500) [note: '간단 피드백']
+  
+  completed_at timestamp [not null, note: '완료일시']
+  created_at timestamp [default: `NOW()`, note: '생성일시']
+  
+  // 인덱스 최적화 (성과 조회용)
+  indexes {
+    (user_id, completed_at) [name: 'idx_user_performance_user_completed']
+    (task_id, completed_at) [name: 'idx_user_performance_task_completed']
+    (user_id, efficiency_score) [name: 'idx_user_performance_user_efficiency']
+  }
+  
+  note: '팀원 성과 및 역량 평가 데이터 (성능 최적화)'
+}
+
+// ===== 알림 관리 (성능 최적화) =====
+Table notifications {
+  id uuid [pk, note: '알림 고유 식별자']
+  user_id uuid [not null, note: '수신자']
+  type varchar(30) [not null, note: '알림 타입: task_assigned, meeting_processed, deadline_approaching']
+  
+  title varchar(100) [not null, note: '알림 제목']
+  message varchar(300) [not null, note: '알림 내용 (간결하게)']
+  
+  // 관련 엔티티
+  related_type varchar(20) [note: '관련 타입: task, meeting, user']
+  related_id uuid [note: '관련 엔티티 ID']
+  
+  // 상태 관리
+  is_read boolean [default: false, note: '읽음 여부']
+  sent_to_slack boolean [default: false, note: 'Slack 전송 여부']
+  
+  created_at timestamp [default: `NOW()`, note: '생성일시']
+  read_at timestamp [note: '읽은 시간']
+  
+  // 인덱스 최적화 (읽지 않은 알림 조회 성능 개선)
+  indexes {
+    (user_id, is_read, created_at) [name: 'idx_notifications_user_read_created']
+    (type, created_at) [name: 'idx_notifications_type_created']
+    (user_id, created_at) [name: 'idx_notifications_user_created']
+  }
+  
+  note: 'Slack 및 웹 대시보드 알림 관리 (성능 최적화)'
+}
+
+// ===== AI 처리 로그 (간소화) =====
+Table ai_processing_logs {
+  id uuid [pk, note: 'AI 처리 로그 고유 식별자']
+  meeting_id uuid [not null, note: '연결된 회의']
+  session_id uuid [note: '실시간 세션 (실시간 처리인 경우)']
+  
+  // 처리 기본 정보
+  processing_type varchar(20) [not null, note: '처리 타입: stt, content_structuring, task_breakdown, team_assignment']
+  model_used varchar(50) [note: '사용된 AI 모델']
+  
+  // 성능 지표 (핵심만)
+  processing_time_ms integer [note: '처리 시간 (밀리초)']
+  input_size_kb integer [note: '입력 데이터 크기 (KB)']
+  success boolean [not null, note: '처리 성공 여부']
+  error_code varchar(20) [note: '오류 코드 (실패시)']
+  
+  created_at timestamp [default: `NOW()`, note: '생성일시']
+  
+  // 인덱스 최적화
+  indexes {
+    (meeting_id, processing_type, created_at) [name: 'idx_ai_logs_meeting_type_created']
+    (success, created_at) [name: 'idx_ai_logs_success_created']
+  }
+  
+  note: 'AI 모델 처리 이력 및 성능 모니터링 (간소화)'
+}
+
+// ===== 관계 정의 =====
+// 팀 관계
+Ref: teams.id < users.team_id [delete: cascade]
+Ref: teams.id < meetings.team_id [delete: cascade]
+Ref: teams.id < platform_integrations.team_id [delete: cascade]
+
+// 사용자 관계
+Ref: users.id < meetings.organizer_id [delete: restrict]
+Ref: users.id < tasks.assigned_to [delete: set null]
+Ref: users.id < user_performance.user_id [delete: cascade]
+Ref: users.id < notifications.user_id [delete: cascade]
+
+// 회의 관계
+Ref: meetings.id < realtime_sessions.meeting_id [delete: cascade]
+Ref: meetings.id < tasks.meeting_id [delete: cascade]
+Ref: meetings.id < ai_processing_logs.meeting_id [delete: cascade]
+
+// 실시간 세션 관계
+Ref: realtime_sessions.id < ai_processing_logs.session_id [delete: set null]
+
+// 업무 관계
+Ref: tasks.id < tasks.parent_task_id [delete: cascade] // 자기 참조
+Ref: tasks.id < task_dependencies.task_id [delete: cascade]
+Ref: tasks.id < task_dependencies.depends_on_task_id [delete: cascade]
+Ref: tasks.id < user_performance.task_id [delete: cascade]

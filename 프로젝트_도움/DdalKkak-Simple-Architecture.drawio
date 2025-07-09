@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram name="DdalKkak Simple Architecture">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- 제목 -->
+        <mxCell id="title" value="🚀 DdalKkak 시스템 아키텍처" style="text;fontSize=20;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="20" width="400" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- 사용자 -->
+        <mxCell id="users" value="👥 사용자&#xa;(Slack, Web, Chrome)" style="rounded=1;fillColor=#bbdefb;" vertex="1" parent="1">
+          <mxGeometry x="100" y="100" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- 프론트엔드 -->
+        <mxCell id="frontend" value="🎨 프론트엔드&#xa;Slack App + React" style="rounded=1;fillColor=#ce93d8;" vertex="1" parent="1">
+          <mxGeometry x="350" y="100" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- API 게이트웨이 -->
+        <mxCell id="gateway" value="🔀 API Gateway&#xa;인증 + 라우팅" style="rounded=1;fillColor=#ffcc80;" vertex="1" parent="1">
+          <mxGeometry x="600" y="100" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- 백엔드 -->
+        <mxCell id="backend" value="🔧 백엔드 API&#xa;Node.js + Express" style="rounded=1;fillColor=#a5d6a7;" vertex="1" parent="1">
+          <mxGeometry x="850" y="100" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- AI 엔진 -->
+        <mxCell id="ai-engine" value="🤖 AI 엔진&#xa;Python + FastAPI" style="rounded=1;fillColor=#fff176;" vertex="1" parent="1">
+          <mxGeometry x="350" y="250" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- GPU 클러스터 -->
+        <mxCell id="gpu" value="🚀 GPU 클러스터&#xa;LLM + STT" style="rounded=1;fillColor=#ffcdd2;" vertex="1" parent="1">
+          <mxGeometry x="600" y="250" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- 데이터베이스 -->
+        <mxCell id="database" value="🗄️ 데이터베이스&#xa;PostgreSQL + Redis" style="rounded=1;fillColor=#80cbc4;" vertex="1" parent="1">
+          <mxGeometry x="850" y="250" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- 외부 서비스 -->
+        <mxCell id="external" value="🔗 외부 서비스&#xa;Slack, Notion, Jira" style="rounded=1;fillColor=#f8bbd9;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="100" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- 연결선 -->
+        <mxCell id="conn1" value="" style="endArrow=classic;" edge="1" parent="1" source="users" target="frontend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="conn2" value="" style="endArrow=classic;" edge="1" parent="1" source="frontend" target="gateway">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="conn3" value="" style="endArrow=classic;" edge="1" parent="1" source="gateway" target="backend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="conn4" value="" style="endArrow=classic;" edge="1" parent="1" source="backend" target="ai-engine">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="conn5" value="" style="endArrow=classic;" edge="1" parent="1" source="ai-engine" target="gpu">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="conn6" value="" style="endArrow=classic;" edge="1" parent="1" source="backend" target="database">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="conn7" value="" style="endArrow=classic;" edge="1" parent="1" source="backend" target="external">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- 기능 설명 -->
+        <mxCell id="features" value="🔄 주요 기능&#xa;• 실시간 STT (음성→텍스트)&#xa;• AI 업무 분석 및 분해&#xa;• 스마트 팀원 배정&#xa;• 외부 툴 자동 연동&#xa;• 멀티테넌트 SaaS" style="rounded=1;fillColor=#f5f5f5;align=left;" vertex="1" parent="1">
+          <mxGeometry x="100" y="400" width="200" height="150" as="geometry" />
+        </mxCell>
+        
+        <!-- 기술 스택 -->
+        <mxCell id="tech-stack" value="💻 기술 스택&#xa;• Frontend: React, TypeScript&#xa;• Backend: Node.js, Express&#xa;• AI: Python, FastAPI&#xa;• DB: PostgreSQL, Redis&#xa;• GPU: NVIDIA A100&#xa;• Models: Qwen3, Whisper" style="rounded=1;fillColor=#f5f5f5;align=left;" vertex="1" parent="1">
+          <mxGeometry x="350" y="400" width="200" height="150" as="geometry" />
+        </mxCell>
+        
+        <!-- 성능 목표 -->
+        <mxCell id="performance" value="⚡ 성능 목표&#xa;• STT 지연: &lt;2초&#xa;• LLM 처리: &lt;1분&#xa;• 전체 워크플로우: &lt;3분&#xa;• 동시 사용자: 1,000명&#xa;• 가용성: 99.9%" style="rounded=1;fillColor=#f5f5f5;align=left;" vertex="1" parent="1">
+          <mxGeometry x="600" y="400" width="200" height="150" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

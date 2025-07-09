@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 DdalKkak - Slack App UI Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Slack-Circular-Pro', 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f8f8;
+            color: #1d1c1d;
+            line-height: 1.46668;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: #4a154b;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .ui-section {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #e1e5e9;
+            overflow: hidden;
+        }
+        
+        .ui-section-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e1e5e9;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .ui-section-content {
+            padding: 20px;
+        }
+        
+        /* Slack 메시지 스타일 */
+        .slack-message {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 15px 0;
+            position: relative;
+        }
+        
+        .slack-message.bot {
+            background: #e8f5e8;
+            border-color: #4caf50;
+        }
+        
+        .slack-message.user {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .bot-avatar {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .user-avatar {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .message-info {
+            flex: 1;
+        }
+        
+        .username {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .timestamp {
+            font-size: 12px;
+            color: #616061;
+        }
+        
+        .message-content {
+            margin-left: 44px;
+        }
+        
+        /* 버튼 스타일 */
+        .btn-primary {
+            background: #007a5a;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 4px 8px 4px 0;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #1d1c1d;
+            border: 1px solid #e1e5e9;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 4px 8px 4px 0;
+        }
+        
+        .btn-danger {
+            background: #e01e5a;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 4px 8px 4px 0;
+        }
+        
+        /* 진행 상태 */
+        .progress-bar {
+            background: #e1e5e9;
+            border-radius: 4px;
+            height: 8px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: #007a5a;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        /* 업무 카드 */
+        .task-card {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .task-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .task-priority {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        .priority-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .priority-medium {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .priority-low {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .assignee {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+        }
+        
+        .assignee-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            margin-right: 8px;
+            background: #2196f3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* 파일 업로드 영역 */
+        .file-upload {
+            border: 2px dashed #e1e5e9;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload:hover {
+            border-color: #007a5a;
+            background: #f8fffe;
+        }
+        
+        .file-upload.dragover {
+            border-color: #007a5a;
+            background: #f8fffe;
+        }
+        
+        /* 설정 폼 */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e1e5e9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e1e5e9;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        /* 통계 카드 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: 600;
+            color: #007a5a;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #616061;
+            margin-top: 4px;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* 애니메이션 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 DdalKkak - AI 업무 자동화 Assistant</h1>
+            <p>회의에서 실행까지, 한 번에 해결하는 지능형 워크플로우</p>
+        </div>
+
+        <!-- 1. App Home 대시보드 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                🏠 App Home - 메인 대시보드
+            </div>
+            <div class="ui-section-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">15</div>
+                        <div class="stat-label">이번 주 분석된 회의</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">47</div>
+                        <div class="stat-label">생성된 업무</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">완료된 업무</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">활성 팀원</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 24px;">
+                    <button class="btn-primary">📁 새 회의 분석</button>
+                    <button class="btn-secondary">📊 상세 리포트</button>
+                    <button class="btn-secondary">⚙️ 설정</button>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 12px;">🎯 최근 활동</h3>
+                    <div class="task-card">
+                        <div class="task-header">
+                            <span class="task-title">📱 모바일 앱 UI 개선</span>
+                            <span class="task-priority priority-high">높음</span>
+                        </div>
+                        <div class="assignee">
+                            <div class="assignee-avatar">김</div>
+                            <span style="font-size: 13px;">김개발 · 2시간 전 배정</span>
+                        </div>
+                    </div>
+                    <div class="task-card">
+                        <div class="task-header">
+                            <span class="task-title">🔐 보안 취약점 점검</span>
+                            <span class="task-priority priority-medium">보통</span>
+                        </div>
+                        <div class="assignee">
+                            <div class="assignee-avatar">박</div>
+                            <span style="font-size: 13px;">박보안 · 1일 전 배정</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 회의 분석 시작 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                🎤 회의 분석 시작
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message user">
+                    <div class="message-header">
+                        <div class="avatar user-avatar">김</div>
+                        <div class="message-info">
+                            <div class="username">김기획</div>
+                            <div class="timestamp">오늘 오후 2:15</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p>/딸깍 회의분석</p>
+                    </div>
+                </div>
+                
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 2:15</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p>안녕하세요! 회의 분석을 시작하겠습니다. 어떤 방식으로 진행하시겠어요?</p>
+                        <div style="margin-top: 16px;">
+                            <button class="btn-primary">📁 음성 파일 업로드</button>
+                            <button class="btn-primary">🎙️ 실시간 녹음</button>
+                            <button class="btn-primary">📋 기획안 올리기</button>
+                            <button class="btn-secondary">🔗 온라인 회의 연동</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 기획안 올리기 인터페이스 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                📋 기획안 올리기
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 2:16</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>📋 기획안을 업로드해주세요!</strong></p>
+                        <p>기존 기획안을 바탕으로 업무를 자동으로 분해하고 배정해드릴게요.</p>
+                        <div style="margin-top: 16px;">
+                            <button class="btn-primary">📄 파일 선택</button>
+                            <button class="btn-secondary">✏️ 텍스트 직접 입력</button>
+                            <button class="btn-secondary">🔗 Notion 링크</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="file-upload" style="margin-top: 20px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                    <h3>기획안 파일을 끌어다 놓으세요</h3>
+                    <p style="color: #616061; margin-top: 8px;">
+                        지원 형식: PDF, DOCX, TXT, MD, PPTX
+                    </p>
+                    <button class="btn-primary" style="margin-top: 16px;">파일 선택</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 팀원 정보 입력 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                👥 팀원 정보 입력
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 2:17</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>👥 팀원 정보를 입력해주세요!</strong></p>
+                        <p>더 정확한 업무 배정을 위해 팀원들의 정보가 필요해요.</p>
+                        
+                        <div style="margin: 20px 0;">
+                            <div class="form-group">
+                                <label class="form-label">팀원 이름</label>
+                                <input type="text" class="form-input" placeholder="예: 김개발">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">역할/직무</label>
+                                <select class="form-select">
+                                    <option>Frontend 개발자</option>
+                                    <option>Backend 개발자</option>
+                                    <option>Full Stack 개발자</option>
+                                    <option>UI/UX 디자이너</option>
+                                    <option>기획자</option>
+                                    <option>QA 엔지니어</option>
+                                    <option>DevOps 엔지니어</option>
+                                    <option>데이터 분석가</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">기술 스택 (쉼표로 구분)</label>
+                                <input type="text" class="form-input" placeholder="예: React, TypeScript, Node.js">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">경력 수준</label>
+                                <select class="form-select">
+                                    <option>신입 (0-1년)</option>
+                                    <option>주니어 (1-3년)</option>
+                                    <option>미드 (3-5년)</option>
+                                    <option>시니어 (5-10년)</option>
+                                    <option>리드 (10년 이상)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">현재 업무량</label>
+                                <select class="form-select">
+                                    <option>여유 (30% 이하)</option>
+                                    <option>보통 (30-70%)</option>
+                                    <option>바쁨 (70-90%)</option>
+                                    <option>매우 바쁨 (90% 이상)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 16px;">
+                            <button class="btn-primary">➕ 팀원 추가</button>
+                            <button class="btn-secondary">📋 일괄 입력</button>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <h4 style="margin-bottom: 12px;">등록된 팀원 (3명)</h4>
+                            <div class="task-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 600;">김개발</div>
+                                        <div style="font-size: 13px; color: #616061;">Frontend 개발자 · React, TypeScript · 미드 레벨</div>
+                                    </div>
+                                    <div>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">✏️ 수정</button>
+                                        <button class="btn-danger" style="padding: 4px 8px; font-size: 12px;">🗑️ 삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="task-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 600;">박백엔드</div>
+                                        <div style="font-size: 13px; color: #616061;">Backend 개발자 · Node.js, Python · 시니어 레벨</div>
+                                    </div>
+                                    <div>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">✏️ 수정</button>
+                                        <button class="btn-danger" style="padding: 4px 8px; font-size: 12px;">🗑️ 삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="task-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 600;">이디자인</div>
+                                        <div style="font-size: 13px; color: #616061;">UI/UX 디자이너 · Figma, Sketch · 주니어 레벨</div>
+                                    </div>
+                                    <div>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">✏️ 수정</button>
+                                        <button class="btn-danger" style="padding: 4px 8px; font-size: 12px;">🗑️ 삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button class="btn-primary">✅ 팀원 정보 완료</button>
+                            <button class="btn-secondary">💾 임시 저장</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 파일 업로드 인터페이스 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                📁 파일 업로드
+            </div>
+            <div class="ui-section-content">
+                <div class="file-upload" id="fileUpload">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📁</div>
+                    <h3>음성 파일을 끌어다 놓으세요</h3>
+                    <p style="color: #616061; margin-top: 8px;">
+                        지원 형식: MP3, WAV, M4A, MP4 (최대 100MB)
+                    </p>
+                    <button class="btn-primary" style="margin-top: 16px;">파일 선택</button>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 12px;">🎛️ 분석 옵션</h3>
+                    <div class="form-group">
+                        <label class="form-label">회의 유형</label>
+                        <select class="form-select">
+                            <option>기획 회의</option>
+                            <option>개발 회의</option>
+                            <option>스프린트 회의</option>
+                            <option>리뷰 회의</option>
+                            <option>브레인스토밍</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">화자 수</label>
+                        <select class="form-select">
+                            <option>자동 감지</option>
+                            <option>2명</option>
+                            <option>3-5명</option>
+                            <option>6명 이상</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 분석 진행 중 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                ⏳ 분석 진행 중
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 2:18</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>📊 회의 분석 진행 중...</strong></p>
+                        <div style="margin: 16px 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span>🎤 음성 → 텍스트 변환</span>
+                                <span>완료</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                        <div style="margin: 16px 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span>🧠 내용 분석 및 구조화</span>
+                                <span>진행 중...</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%;"></div>
+                            </div>
+                        </div>
+                        <div style="margin: 16px 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span>📋 업무 분해</span>
+                                <span>대기 중</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <div style="margin: 16px 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span>👥 팀원 배정</span>
+                                <span>대기 중</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <p style="color: #616061; font-size: 13px; margin-top: 12px;">
+                            💡 예상 완료 시간: 약 2분 남음
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 분석 완료 결과 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                ✅ 분석 완료 결과
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot fade-in">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 2:21</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>🎉 회의 분석이 완료되었습니다!</strong></p>
+                        
+                        <div style="margin: 20px 0;">
+                            <h3 style="margin-bottom: 12px;">📋 업무 분해 결과 (총 5개)</h3>
+                            
+                            <div class="task-card">
+                                <div class="task-header">
+                                    <span class="task-title">🎨 UI/UX 디자인 개선</span>
+                                    <span class="task-priority priority-high">높음</span>
+                                </div>
+                                <p style="font-size: 13px; margin: 8px 0;">사용자 경험 개선을 위한 인터페이스 재설계</p>
+                                <div class="assignee">
+                                    <div class="assignee-avatar">김</div>
+                                    <span style="font-size: 13px;">김디자인 (스킬 매칭: 95%)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="task-card">
+                                <div class="task-header">
+                                    <span class="task-title">🔧 API 성능 최적화</span>
+                                    <span class="task-priority priority-medium">보통</span>
+                                </div>
+                                <p style="font-size: 13px; margin: 8px 0;">응답 시간 단축 및 처리량 증대</p>
+                                <div class="assignee">
+                                    <div class="assignee-avatar">박</div>
+                                    <span style="font-size: 13px;">박백엔드 (스킬 매칭: 92%)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="task-card">
+                                <div class="task-header">
+                                    <span class="task-title">📱 모바일 반응형 구현</span>
+                                    <span class="task-priority priority-medium">보통</span>
+                                </div>
+                                <p style="font-size: 13px; margin: 8px 0;">모바일 디바이스 호환성 향상</p>
+                                <div class="assignee">
+                                    <div class="assignee-avatar">이</div>
+                                    <span style="font-size: 13px;">이프론트 (스킬 매칭: 89%)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <h3 style="margin-bottom: 12px;">🔗 자동 연동 완료</h3>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn-secondary">✅ Notion 페이지 생성</button>
+                                <button class="btn-secondary">✅ Jira 티켓 생성</button>
+                                <button class="btn-secondary">✅ 캘린더 일정 등록</button>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button class="btn-primary">📊 상세 리포트 보기</button>
+                            <button class="btn-secondary">✏️ 수정하기</button>
+                            <button class="btn-secondary">💾 템플릿 저장</button>
+                        </div>
+                        
+                        <div style="margin-top: 24px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 16px;">
+                            <h3 style="margin-bottom: 12px; color: #856404;">🤔 결과를 어떻게 처리하시겠어요?</h3>
+                            <p style="color: #856404; margin-bottom: 16px;">생성된 기획안과 업무를 확인하고 다음 단계를 선택해주세요.</p>
+                            <div style="margin-top: 16px;">
+                                <button class="btn-primary">✅ 바로 적용하기</button>
+                                <button class="btn-secondary">✏️ 수정 후 적용</button>
+                                <button class="btn-secondary">💾 임시 저장</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 실시간 STT -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                🎙️ 실시간 음성 인식
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 3:45</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>🎙️ 실시간 녹음 중...</strong></p>
+                        <div style="background: #f0f0f0; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                            <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                                <div class="pulse" style="width: 12px; height: 12px; background: #ff4444; border-radius: 50%; margin-right: 8px;"></div>
+                                <span style="font-weight: 600;">녹음 중 (03:42)</span>
+                            </div>
+                            <div style="border-left: 3px solid #007a5a; padding-left: 12px;">
+                                <p style="margin: 4px 0;"><strong>김기획:</strong> 네, 그럼 이번 스프린트에서 우선순위를 정해야겠네요.</p>
+                                <p style="margin: 4px 0;"><strong>박개발:</strong> API 성능 이슈를 먼저 해결하는 게 좋을 것 같습니다.</p>
+                                <p style="margin: 4px 0;"><strong>김기획:</strong> 동의합니다. 사용자 경험에 직접적인 영향을 주니까요.</p>
+                                <p style="margin: 4px 0; color: #666;"><em>음성 인식 중...</em></p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px;">
+                            <button class="btn-danger">⏹️ 녹음 중지</button>
+                            <button class="btn-secondary">⏸️ 일시정지</button>
+                            <button class="btn-secondary">📝 즉시 분석</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. 설정 모달 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                ⚙️ 설정
+            </div>
+            <div class="ui-section-content">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                    <div>
+                        <h3 style="margin-bottom: 16px;">🎯 분석 설정</h3>
+                        <div class="form-group">
+                            <label class="form-label">기본 회의 유형</label>
+                            <select class="form-select">
+                                <option>기획 회의</option>
+                                <option>개발 회의</option>
+                                <option>스프린트 회의</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">AI 분석 강도</label>
+                            <select class="form-select">
+                                <option>빠른 분석</option>
+                                <option>표준 분석</option>
+                                <option>상세 분석</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 style="margin-bottom: 16px;">🔗 연동 설정</h3>
+                        <div class="form-group">
+                            <label class="form-label">Notion 워크스페이스</label>
+                            <input type="text" class="form-input" placeholder="워크스페이스 ID 입력">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Jira 프로젝트</label>
+                            <input type="text" class="form-input" placeholder="프로젝트 키 입력">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 style="margin-bottom: 16px;">👥 팀 관리</h3>
+                        <div class="form-group">
+                            <label class="form-label">팀원 목록</label>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                                <span style="background: #e3f2fd; padding: 4px 8px; border-radius: 12px; font-size: 12px;">김기획</span>
+                                <span style="background: #e3f2fd; padding: 4px 8px; border-radius: 12px; font-size: 12px;">박개발</span>
+                                <span style="background: #e3f2fd; padding: 4px 8px; border-radius: 12px; font-size: 12px;">이디자인</span>
+                                <button class="btn-secondary" style="font-size: 12px; padding: 4px 8px;">+ 추가</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 24px; text-align: center;">
+                    <button class="btn-primary">💾 설정 저장</button>
+                    <button class="btn-secondary">↩️ 기본값 복원</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. 업무 수정 인터페이스 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                ✏️ 업무 수정
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 2:25</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>✏️ 업무를 수정하시겠어요?</strong></p>
+                        <p>아래 업무 중 수정하고 싶은 항목을 선택해주세요.</p>
+                        
+                        <div style="margin: 20px 0;">
+                            <div class="task-card" style="border: 2px solid #007a5a;">
+                                <div style="margin-bottom: 16px;">
+                                    <div class="form-group">
+                                        <label class="form-label">업무 제목</label>
+                                        <input type="text" class="form-input" value="🎨 UI/UX 디자인 개선">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">업무 설명</label>
+                                        <textarea class="form-input" rows="3" placeholder="업무 상세 설명을 입력하세요">사용자 경험 개선을 위한 인터페이스 재설계 및 사용성 테스트 진행</textarea>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                        <div class="form-group">
+                                            <label class="form-label">담당자</label>
+                                            <select class="form-select">
+                                                <option selected>김디자인</option>
+                                                <option>박백엔드</option>
+                                                <option>이프론트</option>
+                                                <option>배정 안함</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">우선순위</label>
+                                            <select class="form-select">
+                                                <option selected>높음</option>
+                                                <option>보통</option>
+                                                <option>낮음</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                        <div class="form-group">
+                                            <label class="form-label">시작일</label>
+                                            <input type="date" class="form-input" value="2024-01-15">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">마감일</label>
+                                            <input type="date" class="form-input" value="2024-01-25">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">태그</label>
+                                        <input type="text" class="form-input" placeholder="태그를 입력하세요 (쉼표로 구분)" value="디자인, UI/UX, 개선">
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <button class="btn-primary">💾 수정 완료</button>
+                                    <button class="btn-secondary">❌ 취소</button>
+                                    <button class="btn-danger">🗑️ 업무 삭제</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. 기획안/업무 조회 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                📋 기획안 & 업무 조회
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 2:30</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>📋 저장된 기획안과 업무를 확인해보세요!</strong></p>
+                        
+                        <div style="margin: 20px 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3>📋 기획안 목록</h3>
+                                <button class="btn-secondary">🔄 새로고침</button>
+                            </div>
+                            
+                            <div class="task-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 600;">📱 모바일 앱 개선 기획안</div>
+                                        <div style="font-size: 13px; color: #616061;">2024-01-15 · 업무 5개 생성 · 김기획</div>
+                                    </div>
+                                    <div>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">👀 보기</button>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">✏️ 수정</button>
+                                        <button class="btn-danger" style="padding: 4px 8px; font-size: 12px;">🗑️ 삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="task-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 600;">🔒 보안 강화 프로젝트</div>
+                                        <div style="font-size: 13px; color: #616061;">2024-01-10 · 업무 8개 생성 · 박보안</div>
+                                    </div>
+                                    <div>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">👀 보기</button>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">✏️ 수정</button>
+                                        <button class="btn-danger" style="padding: 4px 8px; font-size: 12px;">🗑️ 삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3>📋 업무 현황</h3>
+                                <div>
+                                    <select class="form-select" style="width: auto; display: inline-block; margin-right: 8px;">
+                                        <option>전체</option>
+                                        <option>진행 중</option>
+                                        <option>완료</option>
+                                        <option>대기</option>
+                                    </select>
+                                    <button class="btn-secondary">🔍 필터</button>
+                                </div>
+                            </div>
+                            
+                            <div class="task-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                            <span style="font-weight: 600; margin-right: 8px;">🎨 UI/UX 디자인 개선</span>
+                                            <span class="task-priority priority-high">높음</span>
+                                        </div>
+                                        <div style="font-size: 13px; color: #616061;">김디자인 · 2024-01-15 ~ 2024-01-25 · 진행 중</div>
+                                        <div style="margin-top: 8px;">
+                                            <div class="progress-bar" style="height: 4px;">
+                                                <div class="progress-fill" style="width: 60%;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-left: 16px;">
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">👀 보기</button>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">✏️ 수정</button>
+                                        <button class="btn-danger" style="padding: 4px 8px; font-size: 12px;">🗑️ 삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="task-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                            <span style="font-weight: 600; margin-right: 8px;">🔧 API 성능 최적화</span>
+                                            <span class="task-priority priority-medium">보통</span>
+                                        </div>
+                                        <div style="font-size: 13px; color: #616061;">박백엔드 · 2024-01-16 ~ 2024-01-30 · 진행 중</div>
+                                        <div style="margin-top: 8px;">
+                                            <div class="progress-bar" style="height: 4px;">
+                                                <div class="progress-fill" style="width: 30%;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-left: 16px;">
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">👀 보기</button>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">✏️ 수정</button>
+                                        <button class="btn-danger" style="padding: 4px 8px; font-size: 12px;">🗑️ 삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. 적용 완료 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                ✅ 적용 완료
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 2:35</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>🎉 모든 업무가 성공적으로 적용되었습니다!</strong></p>
+                        
+                        <div style="margin: 20px 0;">
+                            <h3 style="margin-bottom: 12px;">🔗 연동 완료 내역</h3>
+                            
+                            <div class="task-card" style="background: #e8f5e8; border-color: #4caf50;">
+                                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <span style="margin-right: 8px;">✅</span>
+                                    <span style="font-weight: 600;">Notion 페이지 생성</span>
+                                </div>
+                                <div style="font-size: 13px; color: #2e7d32;">
+                                    • 기획안 문서 생성됨<br>
+                                    • 업무 칸반 보드 생성됨<br>
+                                    • 팀원별 업무 할당 완료
+                                </div>
+                                <div style="margin-top: 8px;">
+                                    <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">🔗 Notion에서 보기</button>
+                                </div>
+                            </div>
+                            
+                            <div class="task-card" style="background: #e8f5e8; border-color: #4caf50;">
+                                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <span style="margin-right: 8px;">✅</span>
+                                    <span style="font-weight: 600;">Jira 티켓 생성</span>
+                                </div>
+                                <div style="font-size: 13px; color: #2e7d32;">
+                                    • 5개 이슈 생성됨<br>
+                                    • 담당자 자동 할당됨<br>
+                                    • 스프린트에 추가됨
+                                </div>
+                                <div style="margin-top: 8px;">
+                                    <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">🔗 Jira에서 보기</button>
+                                </div>
+                            </div>
+                            
+                            <div class="task-card" style="background: #e8f5e8; border-color: #4caf50;">
+                                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <span style="margin-right: 8px;">✅</span>
+                                    <span style="font-weight: 600;">Slack 알림 설정</span>
+                                </div>
+                                <div style="font-size: 13px; color: #2e7d32;">
+                                    • 프로젝트 채널 생성됨<br>
+                                    • 팀원 초대 완료<br>
+                                    • 일정 알림 설정됨
+                                </div>
+                                <div style="margin-top: 8px;">
+                                    <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">📱 채널로 이동</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <h3 style="margin-bottom: 12px;">📊 프로젝트 요약</h3>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-number">5</div>
+                                    <div class="stat-label">생성된 업무</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">3</div>
+                                    <div class="stat-label">배정된 팀원</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">15</div>
+                                    <div class="stat-label">예상 소요일</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">92%</div>
+                                    <div class="stat-label">배정 정확도</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button class="btn-primary">📊 진행 상황 모니터링</button>
+                            <button class="btn-secondary">📋 리포트 생성</button>
+                            <button class="btn-secondary">🔄 다시 분석</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 11. 팀원 정보 수정 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                👥 팀원 정보 수정
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 2:40</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>👤 팀원 정보를 수정하시겠어요?</strong></p>
+                        <p>아래 정보를 수정하고 저장해주세요.</p>
+                        
+                        <div style="margin: 20px 0;">
+                            <div class="task-card" style="border: 2px solid #007a5a;">
+                                <div style="margin-bottom: 16px;">
+                                    <div class="form-group">
+                                        <label class="form-label">팀원 이름</label>
+                                        <input type="text" class="form-input" value="김개발">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">역할/직무</label>
+                                        <select class="form-select">
+                                            <option selected>Frontend 개발자</option>
+                                            <option>Backend 개발자</option>
+                                            <option>Full Stack 개발자</option>
+                                            <option>UI/UX 디자이너</option>
+                                            <option>기획자</option>
+                                            <option>QA 엔지니어</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">기술 스택</label>
+                                        <input type="text" class="form-input" value="React, TypeScript, Node.js, Next.js">
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                        <div class="form-group">
+                                            <label class="form-label">경력 수준</label>
+                                            <select class="form-select">
+                                                <option>신입 (0-1년)</option>
+                                                <option>주니어 (1-3년)</option>
+                                                <option selected>미드 (3-5년)</option>
+                                                <option>시니어 (5-10년)</option>
+                                                <option>리드 (10년 이상)</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">현재 업무량</label>
+                                            <select class="form-select">
+                                                <option>여유 (30% 이하)</option>
+                                                <option selected>보통 (30-70%)</option>
+                                                <option>바쁨 (70-90%)</option>
+                                                <option>매우 바쁨 (90% 이상)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">특이사항/메모</label>
+                                        <textarea class="form-input" rows="3" placeholder="특이사항이나 메모를 입력하세요">프론트엔드 전문, React 생태계에 능숙함</textarea>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <button class="btn-primary">💾 수정 완료</button>
+                                    <button class="btn-secondary">❌ 취소</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 12. 알림 메시지 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                🔔 알림 메시지
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 4:30</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>📢 업무 상태 업데이트</strong></p>
+                        <div style="margin: 16px 0;">
+                            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                <span style="margin-right: 8px;">✅</span>
+                                <span><strong>김디자인</strong>님이 "UI/UX 디자인 개선" 업무를 완료했습니다.</span>
+                            </div>
+                            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                <span style="margin-right: 8px;">🔄</span>
+                                <span><strong>박백엔드</strong>님이 "API 성능 최적화" 업무를 진행 중입니다.</span>
+                            </div>
+                            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                <span style="margin-right: 8px;">⏰</span>
+                                <span><strong>이프론트</strong>님의 "모바일 반응형 구현" 마감일이 내일입니다.</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px;">
+                            <button class="btn-primary">📊 진행 상황 보기</button>
+                            <button class="btn-secondary">🔕 알림 끄기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 추가: 기획안/업무 조회 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                📋 기획안 & 업무 조회
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 2:30</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>📋 저장된 기획안과 업무를 확인해보세요!</strong></p>
+                        
+                        <div style="margin: 20px 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3>📋 기획안 목록</h3>
+                                <button class="btn-secondary">🔄 새로고침</button>
+                            </div>
+                            
+                            <div class="task-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 600;">📱 모바일 앱 개선 기획안</div>
+                                        <div style="font-size: 13px; color: #616061;">2024-01-15 · 업무 5개 생성 · 김기획</div>
+                                    </div>
+                                    <div>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">👀 보기</button>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">✏️ 수정</button>
+                                        <button class="btn-danger" style="padding: 4px 8px; font-size: 12px;">🗑️ 삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="task-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 600;">🔒 보안 강화 프로젝트</div>
+                                        <div style="font-size: 13px; color: #616061;">2024-01-10 · 업무 8개 생성 · 박보안</div>
+                                    </div>
+                                    <div>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">👀 보기</button>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">✏️ 수정</button>
+                                        <button class="btn-danger" style="padding: 4px 8px; font-size: 12px;">🗑️ 삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3>📋 업무 현황</h3>
+                                <div>
+                                    <select class="form-select" style="width: auto; display: inline-block; margin-right: 8px;">
+                                        <option>전체</option>
+                                        <option>진행 중</option>
+                                        <option>완료</option>
+                                        <option>대기</option>
+                                    </select>
+                                    <button class="btn-secondary">🔍 필터</button>
+                                </div>
+                            </div>
+                            
+                            <div class="task-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                            <span style="font-weight: 600; margin-right: 8px;">🎨 UI/UX 디자인 개선</span>
+                                            <span class="task-priority priority-high">높음</span>
+                                        </div>
+                                        <div style="font-size: 13px; color: #616061;">김디자인 · 2024-01-15 ~ 2024-01-25 · 진행 중</div>
+                                        <div style="margin-top: 8px;">
+                                            <div class="progress-bar" style="height: 4px;">
+                                                <div class="progress-fill" style="width: 60%;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-left: 16px;">
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">👀 보기</button>
+                                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px;">✏️ 수정</button>
+                                        <button class="btn-danger" style="padding: 4px 8px; font-size: 12px;">🗑️ 삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 추가: 수정 후 적용 프로세스 -->
+        <div class="ui-section">
+            <div class="ui-section-header">
+                🔧 수정 후 적용
+            </div>
+            <div class="ui-section-content">
+                <div class="slack-message bot">
+                    <div class="message-header">
+                        <div class="avatar bot-avatar">🤖</div>
+                        <div class="message-info">
+                            <div class="username">DdalKkak</div>
+                            <div class="timestamp">오늘 오후 2:45</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>🔧 수정 사항을 적용하시겠어요?</strong></p>
+                        <p>변경된 내용을 확인하고 최종 적용해주세요.</p>
+                        
+                        <div style="margin: 20px 0; background: #f8f9fa; border-radius: 8px; padding: 16px;">
+                            <h3 style="margin-bottom: 12px; color: #007a5a;">📝 수정 사항 요약</h3>
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <span style="margin-right: 8px;">✏️</span>
+                                    <span><strong>업무 3개 수정됨</strong></span>
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <span style="margin-right: 8px;">👥</span>
+                                    <span><strong>담당자 2명 변경됨</strong></span>
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <span style="margin-right: 8px;">📅</span>
+                                    <span><strong>일정 1개 조정됨</strong></span>
+                                </div>
+                            </div>
+                            
+                            <div style="background: white; border-radius: 4px; padding: 12px; margin-bottom: 16px;">
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">변경 상세:</div>
+                                <div style="font-size: 13px; color: #616061;">
+                                    • "UI/UX 디자인 개선" → 담당자: 김디자인 → 이디자인<br>
+                                    • "API 최적화" → 우선순위: 보통 → 높음<br>
+                                    • "모바일 반응형" → 마감일: 01/25 → 01/30
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <h3 style="margin-bottom: 12px;">🔄 적용 옵션</h3>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <input type="checkbox" checked style="margin-right: 8px;">
+                                    <span>Notion 페이지 업데이트</span>
+                                </label>
+                                <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <input type="checkbox" checked style="margin-right: 8px;">
+                                    <span>Jira 티켓 수정</span>
+                                </label>
+                                <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <input type="checkbox" checked style="margin-right: 8px;">
+                                    <span>팀원에게 알림 전송</span>
+                                </label>
+                                <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <input type="checkbox" style="margin-right: 8px;">
+                                    <span>일정 캘린더 동기화</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button class="btn-primary">✅ 수정 사항 적용</button>
+                            <button class="btn-secondary">👀 미리보기</button>
+                            <button class="btn-secondary">❌ 취소</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 파일 업로드 드래그 앤 드롭 기능
+        const fileUpload = document.getElementById('fileUpload');
+        
+        if (fileUpload) {
+            fileUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUpload.classList.add('dragover');
+            });
+            
+            fileUpload.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                fileUpload.classList.remove('dragover');
+            });
+            
+            fileUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUpload.classList.remove('dragover');
+                // 파일 처리 로직 시뮬레이션
+                fileUpload.innerHTML = `
+                    <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+                    <h3>파일이 업로드되었습니다!</h3>
+                    <p style="color: #007a5a; margin-top: 8px;">meeting_recording.mp3 (25.4MB)</p>
+                `;
+            });
+        }
+        
+        // 버튼 클릭 효과
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+            });
+        });
+        
+        // 동적 진행률 업데이트 시뮬레이션
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html> 
