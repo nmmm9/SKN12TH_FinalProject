@@ -185,11 +185,17 @@ def format_notion_project(project_data: dict) -> str:
 
 def format_task_master_prd(prd_data: dict) -> str:
     """Task Master PRD 포맷팅"""
+    # 백슬래시 문제 해결을 위해 문자열 변수 사용
+    apostrophe = "'"
+    overview_default = f"[Provide a high-level overview of your product here. Explain what problem it solves, who it{apostrophe}s for, and why it{apostrophe}s valuable.]"
+    features_default = f"[List and describe the main features of your product. For each feature, include: What it does, Why it{apostrophe}s important, How it works at a high level]"
+    risks_default = f"[Identify potential risks and how they{apostrophe}ll be addressed: Technical challenges, Figuring out the MVP that we can build upon, Resource constraints]"
+    
     return f"""# Overview  
-{prd_data.get('overview', '[Provide a high-level overview of your product here. Explain what problem it solves, who it\'s for, and why it\'s valuable.]')}
+{prd_data.get('overview', overview_default)}
 
 # Core Features  
-{prd_data.get('core_features', '[List and describe the main features of your product. For each feature, include: What it does, Why it\'s important, How it works at a high level]')}
+{prd_data.get('core_features', features_default)}
 
 # User Experience  
 {prd_data.get('user_experience', '[Describe the user journey and experience. Include: User personas, Key user flows, UI/UX considerations]')}
@@ -204,7 +210,7 @@ def format_task_master_prd(prd_data: dict) -> str:
 {prd_data.get('logical_dependency_chain', '[Define the logical order of development: Which features need to be built first (foundation), Getting as quickly as possible to something usable/visible front end that works, Properly pacing and scoping each feature so it is atomic but can also be built upon and improved as development approaches]')}
 
 # Risks and Mitigations  
-{prd_data.get('risks_and_mitigations', '[Identify potential risks and how they\'ll be addressed: Technical challenges, Figuring out the MVP that we can build upon, Resource constraints]')}
+{prd_data.get('risks_and_mitigations', risks_default)}
 
 # Appendix  
 {prd_data.get('appendix', '[Include any additional information: Research findings, Technical specifications]')}
