@@ -3,6 +3,7 @@ torch>=2.0.0
 transformers>=4.36.0
 accelerate>=0.24.0
 bitsandbytes>=0.41.0
+autoawq>=0.1.8
 whisperx
 
 # 웹 서버
