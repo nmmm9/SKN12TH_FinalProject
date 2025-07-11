@@ -1,4 +1,5 @@
-# 🚀 DdalKkak - 지능형 AI Agent Slack App
+
+AAAAAAAAAAAAAAAAA# 🚀 DdalKkak - 지능형 AI Agent Slack App
 
 ## 📖 프로젝트 개요
 
@@ -217,4 +218,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**DdalKkak** - 회의에서 실행까지, 한 번에 해결하는 AI 업무 자동화 플랫폼 🚀
+**DdalKkak** - 회의에서 실행까지, 한 번에 해결하는 AI 업무 자동화 플랫폼 🚀A
+

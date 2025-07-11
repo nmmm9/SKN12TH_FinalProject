@@ -51,7 +51,16 @@
       "Bash(mkdir:*)",
       "Bash(kill:*)",
       "Bash(ssh:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(gh api:*)",
+      "Bash(git branch:*)",
+      "Bash(mv:*)",
+      "Bash(sed:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "mcp__hugging-face-mcp-server__get-model-info",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }

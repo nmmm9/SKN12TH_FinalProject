@@ -1,25 +1,31 @@
 /**
- * Multi-tenant 미들웨어
- * 테넌트별 데이터 격리 및 권한 관리
+ * 단순화된 Multi-tenant 미들웨어
+ * 새로운 단순화된 스키마에 맞게 수정
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { Tenant, TenantUser, TenantContext } from '../types/tenant';
-import { logger } from '../utils/logger';
+import { PrismaClient, Tenant, User } from '@prisma/client';
+// import { logger } from '../utils/logger';  // 임시 비활성화
+
+const logger = {
+  warn: (msg: string) => console.warn(msg),
+  info: (msg: string) => console.info(msg),
+  debug: (msg: string) => console.debug(msg),
+  error: (msg: string, error?: any) => console.error(msg, error)
+};
 
 // Express Request 확장
 declare global {
   namespace Express {
     interface Request {
       tenant?: Tenant;
-      user?: TenantUser;
-      tenantContext?: TenantContext;
+      user?: User;
+      tenantId?: string;
     }
   }
 }
 
-export class TenantMiddleware {
+export class SimpleTenantMiddleware {
   private prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
@@ -27,373 +33,145 @@ export class TenantMiddleware {
   }
 
   /**
-   * Slack 요청에서 테넌트 정보 추출 및 설정
+   * 요청 헤더에서 테넌트 정보 추출 및 설정
    */
-  extractTenantFromSlack = async (
+  extractTenant = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
-      // Slack 요청 헤더에서 팀 ID 추출
-      const slackTeamId = req.headers['x-slack-team-id'] as string ||
-                         req.body?.team_id ||
-                         req.body?.team?.id;
+      // 헤더에서 테넌트 slug 또는 ID 추출
+      const tenantSlug = req.headers['x-tenant-slug'] as string ||
+                        req.headers['x-tenant-id'] as string ||
+                        req.query.tenant as string ||
+                        req.body?.tenantSlug;
 
-      if (!slackTeamId) {
-        logger.warn('No Slack team ID found in request');
-        res.status(400).json({ error: 'Missing Slack team ID' });
+      if (!tenantSlug) {
+        logger.warn('No tenant identifier found in request');
+        res.status(400).json({ error: 'Missing tenant identifier' });
         return;
       }
 
-      // 테넌트 조회
-      const tenant = await this.prisma.tenant.findUnique({
-        where: { slackTeamId }
+      // 테넌트 조회 (slug 또는 ID로)
+      const tenant = await this.prisma.tenant.findFirst({
+        where: {
+          OR: [
+            { slug: tenantSlug },
+            { id: tenantSlug }
+          ]
+        }
       });
 
       if (!tenant) {
-        logger.warn(`Tenant not found for Slack team: ${slackTeamId}`);
+        logger.warn(`Tenant not found: ${tenantSlug}`);
         res.status(404).json({ error: 'Tenant not found' });
         return;
       }
 
-      // 테넌트 상태 확인
-      if (tenant.status !== 'active') {
-        logger.warn(`Inactive tenant: ${tenant.id}`);
-        res.status(403).json({ error: 'Tenant access suspended' });
-        return;
-      }
+      // Request에 테넌트 정보 설정
+      req.tenant = tenant;
+      req.tenantId = tenant.id;
 
-      req.tenant = tenant as Tenant;
-      
-      logger.debug(`Tenant identified: ${tenant.name} (${tenant.id})`);
+      logger.debug(`Tenant set: ${tenant.name} (${tenant.slug})`);
       next();
-
     } catch (error) {
-      logger.error(`Tenant extraction error: ${error}`);
+      logger.error('Error in tenant extraction:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   };
 
   /**
-   * Slack 사용자 인증 및 설정
+   * 사용자 인증 및 테넌트 멤버십 확인
    */
-  authenticateSlackUser = async (
+  authenticateUser = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
-      if (!req.tenant) {
-        res.status(400).json({ error: 'Tenant not found' });
+      const tenantId = req.tenantId;
+      if (!tenantId) {
+        res.status(400).json({ error: 'Tenant not set' });
         return;
       }
 
-      // Slack 사용자 ID 추출
-      const slackUserId = req.headers['x-slack-user-id'] as string ||
-                         req.body?.user_id ||
-                         req.body?.user?.id;
+      // 사용자 정보 추출 (JWT, 세션, API 키 등)
+      const userEmail = req.headers['x-user-email'] as string ||
+                       req.body?.userEmail;
 
-      if (!slackUserId) {
-        logger.warn('No Slack user ID found in request');
-        res.status(400).json({ error: 'Missing Slack user ID' });
+      if (!userEmail) {
+        res.status(401).json({ error: 'User authentication required' });
         return;
       }
 
-      // 사용자 조회 또는 생성
-      let user = await this.prisma.user.findUnique({
+      // 테넌트 내 사용자 조회
+      const user = await this.prisma.user.findUnique({
         where: {
-          idx_users_tenant_slack: {
-            tenantId: req.tenant.id,
-            slackUserId
+          tenantId_email: {
+            tenantId: tenantId,
+            email: userEmail
           }
         }
       });
 
       if (!user) {
-        // 새 사용자 자동 생성 (Slack에서 첫 요청시)
-        const slackUserInfo = await this.getSlackUserInfo(slackUserId, req.body);
-        
-        user = await this.prisma.user.create({
-          data: {
-            tenantId: req.tenant.id,
-            slackUserId,
-            slackEmail: slackUserInfo.email,
-            email: slackUserInfo.email || `${slackUserId}@slack.user`,
-            name: slackUserInfo.name || 'Unknown User',
-            avatar: slackUserInfo.avatar,
-            role: 'member'
-          }
-        });
-
-        logger.info(`New user created: ${user.email} for tenant ${req.tenant.id}`);
-      }
-
-      // 사용자 상태 확인
-      if (!user.isActive || user.status !== 'active') {
-        logger.warn(`Inactive user: ${user.id}`);
-        res.status(403).json({ error: 'User access denied' });
+        logger.warn(`User not found in tenant: ${userEmail}`);
+        res.status(403).json({ error: 'User not authorized for this tenant' });
         return;
       }
 
-      req.user = user as TenantUser;
-      
-      // 테넌트 컨텍스트 설정
-      req.tenantContext = {
-        tenant: req.tenant,
-        user: req.user,
-        permissions: await this.getUserPermissions(user)
-      };
+      // Request에 사용자 정보 설정
+      req.user = user;
 
-      logger.debug(`User authenticated: ${user.email} (${user.id})`);
+      logger.debug(`User authenticated: ${user.email} in tenant ${tenantId}`);
       next();
-
     } catch (error) {
-      logger.error(`User authentication error: ${error}`);
+      logger.error('Error in user authentication:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   };
 
   /**
-   * 권한 확인 미들웨어
+   * 테넌트별 데이터 필터링을 위한 간단한 헬퍼 메서드
    */
-  requirePermission = (permission: string) => {
-    return (req: Request, res: Response, next: NextFunction): void => {
-      if (!req.tenantContext) {
-        res.status(401).json({ error: 'Authentication required' });
-        return;
-      }
-
-      const hasPermission = this.checkPermission(req.tenantContext, permission);
-      
-      if (!hasPermission) {
-        logger.warn(`Permission denied: ${permission} for user ${req.user?.id}`);
-        res.status(403).json({ error: 'Insufficient permissions' });
-        return;
-      }
-
-      next();
-    };
-  };
+  getPrismaForTenant(tenantId: string) {
+    // 복잡한 확장 기능 대신 일반 prisma 클라이언트 반환
+    // 사용할 때 직접 tenantId를 where 조건에 추가
+    return this.prisma;
+  }
 
   /**
-   * 역할 확인 미들웨어
+   * 개발용 테넌트 자동 생성 미들웨어
    */
-  requireRole = (roles: string[]) => {
-    return (req: Request, res: Response, next: NextFunction): void => {
-      if (!req.user) {
-        res.status(401).json({ error: 'Authentication required' });
-        return;
-      }
-
-      if (!roles.includes(req.user.role)) {
-        logger.warn(`Role denied: required ${roles}, user has ${req.user.role}`);
-        res.status(403).json({ error: 'Insufficient role' });
-        return;
-      }
-
-      next();
-    };
-  };
-
-  /**
-   * 테넌트 사용량 제한 확인
-   */
-  checkUsageLimits = async (
+  createDevTenant = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
-      if (!req.tenant) {
-        res.status(400).json({ error: 'Tenant not found' });
-        return;
-      }
+      const devTenantSlug = 'dev-tenant';
+      
+      let tenant = await this.prisma.tenant.findUnique({
+        where: { slug: devTenantSlug }
+      });
 
-      // 요청 타입에 따른 사용량 확인
-      const resourceType = this.getResourceTypeFromRequest(req);
-      const currentUsage = await this.getCurrentUsage(req.tenant.id, resourceType);
-      const limit = this.getUsageLimit(req.tenant, resourceType);
-
-      if (currentUsage >= limit) {
-        logger.warn(`Usage limit exceeded: ${resourceType} for tenant ${req.tenant.id}`);
-        res.status(429).json({ 
-          error: 'Usage limit exceeded',
-          current: currentUsage,
-          limit,
-          planType: req.tenant.planType
-        });
-        return;
-      }
-
-      next();
-
-    } catch (error) {
-      logger.error(`Usage limit check error: ${error}`);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  };
-
-  /**
-   * 데이터 접근 권한 확인 (Row Level Security)
-   */
-  checkDataAccess = (resourceType: string, operation: 'read' | 'write' | 'delete') => {
-    return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      try {
-        if (!req.tenantContext) {
-          res.status(401).json({ error: 'Authentication required' });
-          return;
-        }
-
-        const resourceId = req.params.id;
-        if (resourceId) {
-          const hasAccess = await this.checkResourceAccess(
-            req.tenantContext.tenant.id,
-            resourceType,
-            resourceId,
-            operation
-          );
-
-          if (!hasAccess) {
-            logger.warn(`Data access denied: ${resourceType}:${resourceId} for tenant ${req.tenantContext.tenant.id}`);
-            res.status(403).json({ error: 'Access denied to resource' });
-            return;
+      if (!tenant) {
+        tenant = await this.prisma.tenant.create({
+          data: {
+            name: 'Development Tenant',
+            slug: devTenantSlug
           }
-        }
-
-        next();
-
-      } catch (error) {
-        logger.error(`Data access check error: ${error}`);
-        res.status(500).json({ error: 'Internal server error' });
+        });
+        logger.info(`Created development tenant: ${tenant.id}`);
       }
-    };
-  };
 
-  /**
-   * Slack 사용자 정보 추출
-   */
-  private getSlackUserInfo(slackUserId: string, requestBody: any): any {
-    return {
-      email: requestBody.user?.profile?.email || requestBody.user?.email,
-      name: requestBody.user?.profile?.real_name || requestBody.user?.name || requestBody.user?.username,
-      avatar: requestBody.user?.profile?.image_72 || requestBody.user?.avatar
-    };
-  }
-
-  /**
-   * 사용자 권한 조회
-   */
-  private async getUserPermissions(user: any): Promise<string[]> {
-    const rolePermissions = {
-      admin: ['*'], // 모든 권한
-      manager: ['read:all', 'write:meeting', 'write:task', 'write:project'],
-      member: ['read:own', 'write:meeting', 'write:task']
-    };
-
-    const basePermissions = rolePermissions[user.role as keyof typeof rolePermissions] || [];
-    const customPermissions = user.permissions ? Object.keys(user.permissions).filter(p => user.permissions[p]) : [];
-
-    return [...basePermissions, ...customPermissions];
-  }
-
-  /**
-   * 권한 확인
-   */
-  private checkPermission(context: TenantContext, permission: string): boolean {
-    // 관리자는 모든 권한
-    if (context.user.role === 'admin' || context.permissions.includes('*')) {
-      return true;
-    }
-
-    return context.permissions.includes(permission);
-  }
-
-  /**
-   * 요청에서 리소스 타입 추출
-   */
-  private getResourceTypeFromRequest(req: Request): string {
-    const path = req.path;
-    if (path.includes('/meetings')) return 'meetings';
-    if (path.includes('/tasks')) return 'tasks';
-    if (path.includes('/projects')) return 'projects';
-    if (path.includes('/users')) return 'users';
-    return 'general';
-  }
-
-  /**
-   * 현재 사용량 조회
-   */
-  private async getCurrentUsage(tenantId: string, resourceType: string): Promise<number> {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const usage = await this.prisma.usageStats.findFirst({
-      where: {
-        tenantId,
-        periodType: 'monthly',
-        periodStart: startOfMonth
-      }
-    });
-
-    if (!usage) return 0;
-
-    switch (resourceType) {
-      case 'meetings': return usage.meetingCount;
-      case 'users': return usage.userCount;
-      default: return 0;
-    }
-  }
-
-  /**
-   * 사용량 제한 조회
-   */
-  private getUsageLimit(tenant: Tenant, resourceType: string): number {
-    const limits = {
-      free: { meetings: 10, users: 5 },
-      professional: { meetings: 100, users: 50 },
-      enterprise: { meetings: -1, users: -1 } // unlimited
-    };
-
-    const planLimits = limits[tenant.planType as keyof typeof limits] || limits.free;
-    return planLimits[resourceType as keyof typeof planLimits] || 0;
-  }
-
-  /**
-   * 리소스 접근 권한 확인
-   */
-  private async checkResourceAccess(
-    tenantId: string,
-    resourceType: string,
-    resourceId: string,
-    operation: string
-  ): Promise<boolean> {
-    try {
-      switch (resourceType) {
-        case 'meeting':
-          const meeting = await this.prisma.meeting.findUnique({
-            where: { id: resourceId }
-          });
-          return meeting?.tenantId === tenantId;
-
-        case 'task':
-          const task = await this.prisma.task.findUnique({
-            where: { id: resourceId }
-          });
-          return task?.tenantId === tenantId;
-
-        case 'project':
-          const project = await this.prisma.project.findUnique({
-            where: { id: resourceId }
-          });
-          return project?.tenantId === tenantId;
-
-        default:
-          return false;
-      }
+      req.tenant = tenant;
+      req.tenantId = tenant.id;
+      next();
     } catch (error) {
-      logger.error(`Resource access check failed: ${error}`);
-      return false;
+      logger.error('Error creating dev tenant:', error);
+      res.status(500).json({ error: 'Failed to setup dev tenant' });
     }
-  }
+  };
 }
