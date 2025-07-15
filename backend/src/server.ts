@@ -130,6 +130,399 @@ app.get('/health', async (req, res) => {
   }
 });
 
+// ===== OAuth 연동 엔드포인트 =====
+
+// Notion OAuth 시작
+app.get('/auth/notion/:tenantSlug', tenantMiddleware.extractTenant, async (req, res) => {
+  try {
+    const { tenantSlug } = req.params;
+    const { userId, state } = req.query;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+    
+    const stateData = {
+      tenantId: req.tenantId,
+      userId: userId as string,
+      timestamp: Date.now()
+    };
+    
+    const encodedState = Buffer.from(JSON.stringify(stateData)).toString('base64');
+    
+    const authUrl = `https://api.notion.com/v1/oauth/authorize?` +
+      `client_id=${process.env.NOTION_CLIENT_ID || 'YOUR_NOTION_CLIENT_ID'}&` +
+      `response_type=code&` +
+      `owner=user&` +
+      `state=${encodedState}&` +
+      `redirect_uri=${encodeURIComponent(process.env.APP_URL + '/auth/notion/callback')}`;
+      
+    console.log('🔗 Notion OAuth 시작:', {
+      tenantSlug,
+      userId,
+      authUrl: authUrl.substring(0, 100) + '...'
+    });
+    
+    return res.redirect(authUrl);
+  } catch (error) {
+    console.error('❌ Notion OAuth 시작 오류:', error);
+    return res.status(500).json({ error: 'OAuth initialization failed' });
+  }
+});
+
+// Notion OAuth 콜백
+app.get('/auth/notion/callback', async (req, res) => {
+  try {
+    const { code, state, error } = req.query;
+    
+    if (error) {
+      console.error('❌ Notion OAuth 오류:', error);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3001'}/settings?notion=error&message=${encodeURIComponent(error as string)}`);
+    }
+    
+    if (!code || !state) {
+      return res.status(400).json({ error: 'Missing code or state' });
+    }
+    
+    // state 디코딩
+    const stateData = JSON.parse(Buffer.from(state as string, 'base64').toString());
+    const { tenantId, userId } = stateData;
+    
+    console.log('🔄 Notion OAuth 콜백 처리:', { tenantId, userId });
+    
+    // 토큰 교환
+    const tokenResponse = await fetch('https://api.notion.com/v1/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${Buffer.from(`${process.env.NOTION_CLIENT_ID}:${process.env.NOTION_CLIENT_SECRET}`).toString('base64')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: process.env.APP_URL + '/auth/notion/callback'
+      })
+    });
+    
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+      console.error('❌ Notion 토큰 교환 실패:', errorData);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3001'}/settings?notion=error&message=token_exchange_failed`);
+    }
+    
+    const tokens: any = await tokenResponse.json();
+    console.log('✅ Notion 토큰 받음:', {
+      workspace_name: tokens.workspace_name,
+      bot_id: tokens.bot_id
+    });
+    
+    // 암호화 함수 (간단한 버전)
+    const encrypt = (text: string) => {
+      // 실제로는 crypto 모듈 사용해야 함
+      return Buffer.from(text).toString('base64');
+    };
+    
+    // 사용자별 토큰 저장
+    await prisma.integration.upsert({
+      where: {
+        tenantId_userId_serviceType: {
+          tenantId,
+          userId,
+          serviceType: 'NOTION'
+        }
+      },
+      update: {
+        accessToken: encrypt(tokens.access_token),
+        isActive: true,
+        config: {
+          workspace_name: tokens.workspace_name,
+          workspace_id: tokens.workspace_id,
+          bot_id: tokens.bot_id,
+          owner: tokens.owner
+        }
+      },
+      create: {
+        tenantId,
+        userId,
+        serviceType: 'NOTION',
+        accessToken: encrypt(tokens.access_token),
+        isActive: true,
+        config: {
+          workspace_name: tokens.workspace_name,
+          workspace_id: tokens.workspace_id,
+          bot_id: tokens.bot_id,
+          owner: tokens.owner
+        }
+      }
+    });
+    
+    console.log('✅ Notion 연동 저장 완료');
+    
+    // 성공 페이지로 리다이렉트 (임시로 간단한 HTML)
+    res.send(`
+      <html>
+        <head>
+          <title>Notion 연동 완료</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; }
+            .success { color: #28a745; font-size: 24px; margin-bottom: 20px; }
+            .info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="success">✅ Notion 연동이 완료되었습니다!</div>
+          <div class="info">
+            <h3>연동된 워크스페이스</h3>
+            <p><strong>${tokens.workspace_name}</strong></p>
+            <p>이제 TtalKkak에서 회의록을 생성하면 자동으로 Notion 페이지가 만들어집니다.</p>
+          </div>
+          <p>이 창을 닫고 Slack으로 돌아가세요.</p>
+          <script>
+            setTimeout(() => {
+              window.close();
+            }, 3000);
+          </script>
+        </body>
+      </html>
+    `);
+    
+  } catch (error) {
+    console.error('❌ Notion OAuth 콜백 처리 오류:', error);
+    res.status(500).send(`
+      <html>
+        <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+          <h2 style="color: #dc3545;">❌ 연동 실패</h2>
+          <p>Notion 연동 중 오류가 발생했습니다.</p>
+          <p>오류: ${error instanceof Error ? error.message : 'Unknown error'}</p>
+          <p>다시 시도해 주세요.</p>
+        </body>
+      </html>
+    `);
+  }
+});
+
+// ===== JIRA OAuth 연동 =====
+
+// JIRA OAuth 시작
+app.get('/auth/jira/:tenantSlug', tenantMiddleware.extractTenant, async (req, res) => {
+  try {
+    const { tenantSlug } = req.params;
+    const { userId } = req.query;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+    
+    const stateData = {
+      tenantId: req.tenantId,
+      userId: userId as string,
+      timestamp: Date.now()
+    };
+    
+    const encodedState = Buffer.from(JSON.stringify(stateData)).toString('base64');
+    
+    // JIRA OAuth 2.0 (3LO) URL
+    const authUrl = `https://auth.atlassian.com/authorize?` +
+      `audience=api.atlassian.com&` +
+      `client_id=${process.env.JIRA_CLIENT_ID || 'YOUR_JIRA_CLIENT_ID'}&` +
+      `scope=read%3Ajira-user%20read%3Ajira-work%20write%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration&` +
+      `redirect_uri=${encodeURIComponent(process.env.APP_URL + '/auth/jira/callback')}&` +
+      `state=${encodedState}&` +
+      `response_type=code&` +
+      `prompt=consent`;
+      
+    console.log('🔗 JIRA OAuth 시작:', {
+      tenantSlug,
+      userId,
+      authUrl: authUrl.substring(0, 100) + '...'
+    });
+    
+    return res.redirect(authUrl);
+  } catch (error) {
+    console.error('❌ JIRA OAuth 시작 오류:', error);
+    return res.status(500).json({ error: 'OAuth initialization failed' });
+  }
+});
+
+// JIRA OAuth 콜백
+app.get('/auth/jira/callback', async (req, res) => {
+  try {
+    const { code, state, error } = req.query;
+    
+    if (error) {
+      console.error('❌ JIRA OAuth 오류:', error);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3001'}/settings?jira=error&message=${error}`);
+    }
+    
+    if (!code || !state) {
+      return res.status(400).send('Missing authorization code or state');
+    }
+    
+    // state 검증
+    const stateData = JSON.parse(Buffer.from(state as string, 'base64').toString());
+    const { tenantId, userId } = stateData;
+    
+    console.log('🔄 JIRA 토큰 교환 시작:', { tenantId, userId });
+    
+    // 토큰 교환
+    const tokenResponse = await fetch('https://auth.atlassian.com/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        grant_type: 'authorization_code',
+        client_id: process.env.JIRA_CLIENT_ID,
+        client_secret: process.env.JIRA_CLIENT_SECRET,
+        code,
+        redirect_uri: process.env.APP_URL + '/auth/jira/callback'
+      })
+    });
+    
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+      console.error('❌ JIRA 토큰 교환 실패:', errorData);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3001'}/settings?jira=error&message=token_exchange_failed`);
+    }
+    
+    const tokens: any = await tokenResponse.json();
+    
+    // 사용자 정보 및 사이트 정보 가져오기
+    const [userResponse, sitesResponse] = await Promise.all([
+      fetch('https://api.atlassian.com/me', {
+        headers: {
+          'Authorization': `Bearer ${tokens.access_token}`,
+          'Accept': 'application/json'
+        }
+      }),
+      fetch('https://api.atlassian.com/oauth/token/accessible-resources', {
+        headers: {
+          'Authorization': `Bearer ${tokens.access_token}`,
+          'Accept': 'application/json'
+        }
+      })
+    ]);
+    
+    const [userInfo, sites]: [any, any] = await Promise.all([
+      userResponse.json(),
+      sitesResponse.json()
+    ]);
+    
+    if (!sites || sites.length === 0) {
+      return res.status(400).send('No accessible JIRA sites found');
+    }
+    
+    // 첫 번째 사이트를 기본으로 사용 (실제로는 사용자가 선택하게 해야 함)
+    const selectedSite = sites[0];
+    
+    console.log('✅ JIRA 토큰 받음:', {
+      user: userInfo.name,
+      site: selectedSite.name,
+      cloudId: selectedSite.id
+    });
+    
+    // 암호화 함수 (간단한 버전)
+    const encrypt = (text: string) => {
+      return Buffer.from(text).toString('base64');
+    };
+    
+    // 사용자별 토큰 저장
+    await prisma.integration.upsert({
+      where: {
+        tenantId_userId_serviceType: {
+          tenantId,
+          userId,
+          serviceType: 'JIRA'
+        }
+      },
+      update: {
+        accessToken: encrypt(tokens.access_token),
+        refreshToken: encrypt(tokens.refresh_token),
+        isActive: true,
+        config: {
+          user_id: userInfo.account_id,
+          user_name: userInfo.name,
+          user_email: userInfo.email,
+          site_id: selectedSite.id,
+          site_name: selectedSite.name,
+          site_url: selectedSite.url,
+          scopes: selectedSite.scopes,
+          expires_at: Date.now() + (tokens.expires_in * 1000),
+          defaultProjectKey: 'TASK', // 기본값, 나중에 설정에서 변경 가능
+          defaultIssueType: 'Task',
+          defaultPriority: 'Medium'
+        }
+      },
+      create: {
+        tenantId,
+        userId,
+        serviceType: 'JIRA',
+        accessToken: encrypt(tokens.access_token),
+        refreshToken: encrypt(tokens.refresh_token),
+        isActive: true,
+        config: {
+          user_id: userInfo.account_id,
+          user_name: userInfo.name,
+          user_email: userInfo.email,
+          site_id: selectedSite.id,
+          site_name: selectedSite.name,
+          site_url: selectedSite.url,
+          scopes: selectedSite.scopes,
+          expires_at: Date.now() + (tokens.expires_in * 1000),
+          defaultProjectKey: 'TASK',
+          defaultIssueType: 'Task',
+          defaultPriority: 'Medium'
+        }
+      }
+    });
+    
+    console.log('✅ JIRA 연동 저장 완료');
+    
+    // 성공 페이지로 리다이렉트
+    res.send(`
+      <html>
+        <head>
+          <title>JIRA 연동 완료</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; }
+            .success { color: #28a745; font-size: 24px; margin-bottom: 20px; }
+            .info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="success">✅ JIRA 연동이 완료되었습니다!</div>
+          <div class="info">
+            <h3>연동된 JIRA 사이트</h3>
+            <p><strong>${selectedSite.name}</strong></p>
+            <p>${selectedSite.url}</p>
+            <p>사용자: ${userInfo.name} (${userInfo.email})</p>
+            <p>이제 TtalKkak에서 생성된 업무가 자동으로 JIRA 이슈로 생성됩니다.</p>
+          </div>
+          <p>이 창을 닫고 Slack으로 돌아가세요.</p>
+          <script>
+            setTimeout(() => {
+              window.close();
+            }, 3000);
+          </script>
+        </body>
+      </html>
+    `);
+    
+  } catch (error) {
+    console.error('❌ JIRA OAuth 콜백 처리 오류:', error);
+    res.status(500).send(`
+      <html>
+        <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+          <h2 style="color: #dc3545;">❌ 연동 실패</h2>
+          <p>JIRA 연동 중 오류가 발생했습니다.</p>
+          <p>오류: ${error instanceof Error ? error.message : 'Unknown error'}</p>
+          <p>다시 시도해 주세요.</p>
+        </body>
+      </html>
+    `);
+  }
+});
+
 // AI 서버 상태 확인
 app.get('/ai/health', async (req, res) => {
   try {

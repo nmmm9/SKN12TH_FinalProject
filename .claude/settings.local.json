@@ -60,7 +60,12 @@
       "Bash(rg:*)",
       "mcp__hugging-face-mcp-server__get-model-info",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(python:*)",
+      "Bash(ngrok:*)",
+      "Bash(fuser:*)",
+      "Bash(pg_ctl:*)",
+      "Bash(docker:*)"
     ],
     "deny": []
   }

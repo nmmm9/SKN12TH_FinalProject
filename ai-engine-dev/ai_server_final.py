@@ -293,7 +293,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/", response_model=Dict[str, str])
+@app.get("/")
 async def root():
     """루트 엔드포인트"""
     return {

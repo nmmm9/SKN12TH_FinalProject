@@ -128,16 +128,17 @@ model TaskMetadata {
 }
 
 model Integration {
-  id          String             @id @default(uuid())
-  tenantId    String             @map("tenant_id")
-  userId      String             @map("user_id")
-  serviceType IntegrationService @map("service_type")
-  accessToken String?            @map("access_token")
-  isActive    Boolean            @default(true) @map("is_active")
-  createdAt   DateTime           @default(now()) @map("created_at")
-  config      Json?
-  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String             @id @default(uuid())
+  tenantId     String             @map("tenant_id")
+  userId       String             @map("user_id")
+  serviceType  IntegrationService @map("service_type")
+  accessToken  String?            @map("access_token")
+  refreshToken String?            @map("refresh_token")
+  isActive     Boolean            @default(true) @map("is_active")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  config       Json?
+  tenant       Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, userId, serviceType])
   @@map("integrations")

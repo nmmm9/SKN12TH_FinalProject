@@ -94,16 +94,21 @@ class JiraService {
     method: string = 'GET',
     data?: any
   ) {
-    const jiraConfig = integration.serviceConfig || {};
-    const baseUrl = jiraConfig.baseUrl;
+    const config = integration.config || {};
+    const baseUrl = config.site_url;
     
     if (!baseUrl) {
-      throw new Error('JIRA base URL not configured');
+      throw new Error('JIRA site URL not configured');
     }
+
+    // 토큰 복호화
+    const decrypt = (encryptedText: string) => {
+      return Buffer.from(encryptedText, 'base64').toString();
+    };
 
     const url = `${baseUrl}/rest/api/3${endpoint}`;
     const headers = {
-      'Authorization': `Bearer ${integration.accessToken}`,
+      'Authorization': `Bearer ${decrypt(integration.accessToken)}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
@@ -147,7 +152,8 @@ class JiraService {
       LOW: 'Low'
     };
 
-    const issueData = {
+    // Epic의 경우 특별한 필드 처리
+    const issueData: any = {
       fields: {
         project: {
           key: jiraProject.jiraProjectKey
@@ -169,7 +175,9 @@ class JiraService {
           ]
         },
         issuetype: {
-          name: request.parentKey ? 'Sub-task' : (request.issueType || jiraProject.defaultIssueType)
+          name: request.issueType === 'Epic' ? 'Epic' : 
+                request.parentKey ? 'Sub-task' : 
+                (request.issueType || jiraProject.defaultIssueType)
         },
         priority: {
           name: priorityMapping[request.priority] || jiraProject.defaultPriority
@@ -178,14 +186,27 @@ class JiraService {
           assignee: {
             accountId: request.assignee
           }
-        }),
-        ...(request.parentKey && {
-          parent: {
-            key: request.parentKey
-          }
         })
       }
     };
+
+    // Epic의 경우 Epic Name 필드 추가 (일부 JIRA 인스턴스에서 필요)
+    if (request.issueType === 'Epic') {
+      issueData.fields.customfield_10011 = request.summary; // Epic Name (필드 ID는 환경마다 다를 수 있음)
+    }
+
+    // Sub-task의 경우 parent 필드 추가
+    if (request.parentKey) {
+      issueData.fields.parent = {
+        key: request.parentKey
+      };
+    }
+
+    // Task가 Epic에 속하는 경우 Epic Link 필드 추가
+    if (request.issueType === 'Task' && request.parentKey) {
+      issueData.fields.customfield_10014 = request.parentKey; // Epic Link (필드 ID는 환경마다 다를 수 있음)
+      delete issueData.fields.parent; // Task는 parent가 아닌 Epic Link 사용
+    }
 
     const result = await this.callJiraAPI(integration, '/issue', 'POST', issueData) as any;
     
@@ -194,6 +215,132 @@ class JiraService {
       id: result.id,
       self: result.self
     };
+  }
+
+  /**
+   * TaskMaster에서 생성된 Task와 Subtask를 JIRA에 올바르게 매핑
+   * TaskMaster TASK → JIRA Epic
+   * TaskMaster SUBTASK → JIRA Task (Epic에 연결)
+   */
+  async syncTaskMasterToJira(
+    tenantId: string, 
+    userId: string, 
+    projectData: {
+      title: string;
+      overview: string;
+      tasks: Array<{
+        title: string;
+        description: string;
+        priority: string;
+        estimated_hours: number;
+        complexity: string;
+        subtasks?: Array<{
+          title: string;
+          description: string;
+          estimated_hours: number;
+        }>;
+      }>;
+    }
+  ) {
+    const results: any[] = [];
+    const epics: string[] = [];
+    
+    try {
+      console.log('🎫 TaskMaster → JIRA 매핑 시작:', projectData.title);
+      
+      // TaskMaster의 각 TASK를 JIRA Epic으로 생성
+      for (const task of projectData.tasks) {
+        try {
+          // 1. TaskMaster TASK → JIRA Epic
+          const epicIssue = await this.createJiraIssue(tenantId, userId, {
+            summary: task.title,
+            description: task.description,
+            issueType: 'Epic',
+            priority: task.priority || 'MEDIUM'
+          });
+          
+          console.log(`✅ Epic 생성 (TaskMaster Task): ${epicIssue.key} - ${task.title}`);
+          epics.push(epicIssue.key);
+          results.push({
+            type: 'Epic',
+            key: epicIssue.key,
+            title: task.title,
+            source: 'TaskMaster Task',
+            success: true
+          });
+          
+          // 2. TaskMaster SUBTASK들을 JIRA Task로 생성 (Epic에 연결)
+          if (task.subtasks && task.subtasks.length > 0) {
+            for (const subtask of task.subtasks) {
+              try {
+                const jiraTaskIssue = await this.createJiraIssue(tenantId, userId, {
+                  summary: subtask.title,
+                  description: subtask.description,
+                  issueType: 'Task',
+                  priority: 'MEDIUM',
+                  parentKey: epicIssue.key // Epic에 연결
+                });
+                
+                console.log(`✅ Task 생성 (TaskMaster Subtask): ${jiraTaskIssue.key} - ${subtask.title}`);
+                results.push({
+                  type: 'Task',
+                  key: jiraTaskIssue.key,
+                  title: subtask.title,
+                  parentKey: epicIssue.key,
+                  source: 'TaskMaster Subtask',
+                  success: true
+                });
+              } catch (subtaskError) {
+                console.error(`❌ Task 생성 실패 (TaskMaster Subtask: ${subtask.title}):`, subtaskError);
+                results.push({
+                  type: 'Task',
+                  title: subtask.title,
+                  parentKey: epicIssue.key,
+                  source: 'TaskMaster Subtask',
+                  error: subtaskError instanceof Error ? subtaskError.message : 'Unknown error',
+                  success: false
+                });
+              }
+            }
+          }
+          
+        } catch (taskError) {
+          console.error(`❌ Epic 생성 실패 (TaskMaster Task: ${task.title}):`, taskError);
+          results.push({
+            type: 'Epic',
+            title: task.title,
+            source: 'TaskMaster Task',
+            error: taskError instanceof Error ? taskError.message : 'Unknown error',
+            success: false
+          });
+        }
+      }
+      
+      const successCount = results.filter(r => r.success).length;
+      const totalCount = results.length;
+      const epicsCreated = results.filter(r => r.type === 'Epic' && r.success).length;
+      const tasksCreated = results.filter(r => r.type === 'Task' && r.success).length;
+      
+      console.log(`✅ JIRA 매핑 완료: Epic ${epicsCreated}개, Task ${tasksCreated}개 (총 ${successCount}/${totalCount})`);
+      
+      return {
+        success: true,
+        epics: epics,
+        totalCreated: successCount,
+        totalAttempted: totalCount,
+        epicsCreated,
+        tasksCreated,
+        results
+      };
+      
+    } catch (error) {
+      console.error('❌ TaskMaster → JIRA 매핑 실패:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        results
+      };
+    }
   }
 
   /**
