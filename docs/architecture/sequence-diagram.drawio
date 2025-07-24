@@ -1,0 +1,371 @@
+<mxfile host="app.diagrams.net" modified="2024-01-15T00:00:00.000Z" agent="5.0" etag="xxx" version="22.1.16" type="device">
+  <diagram name="TtalKkak-Sequence" id="sequence-diagram">
+    <mxGraphModel dx="1422" dy="754" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- 제목 -->
+        <mxCell id="title" value="TtalKkak AI 프로젝트 관리 시스템 - 시퀀스 다이어그램" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="800" height="30" as="geometry"/>
+        </mxCell>
+        
+        <!-- 액터들 -->
+        <mxCell id="user" value="사용자" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="30" height="60" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="slack-bot" value="Slack Bot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b1fa2;strokeColor=#4a148c;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry x="200" y="90" width="80" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="express-server" value="Express Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f57c00;strokeColor=#e65100;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry x="330" y="90" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="ai-server" value="AI Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d32f2f;strokeColor=#b71c1c;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry x="480" y="90" width="80" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="whisperx" value="WhisperX" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d32f2f;strokeColor=#b71c1c;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry x="610" y="90" width="80" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="klue-bert" value="KLUE-BERT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d32f2f;strokeColor=#b71c1c;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry x="740" y="90" width="80" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="qwen3" value="Qwen3-32B" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d32f2f;strokeColor=#b71c1c;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry x="870" y="90" width="80" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="task-assigner" value="Task Assigner" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#388e3c;strokeColor=#1b5e20;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="90" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="notion-service" value="Notion Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#388e3c;strokeColor=#1b5e20;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="90" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="jira-service" value="JIRA Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#388e3c;strokeColor=#1b5e20;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="90" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="database" value="PostgreSQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0277bd;strokeColor=#01579b;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="90" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <!-- 생명선들 -->
+        <mxCell id="user-lifeline" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="90" y="160" width="10" height="960" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="slack-lifeline" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="235" y="160" width="10" height="960" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="express-lifeline" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="375" y="160" width="10" height="960" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="ai-lifeline" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="515" y="160" width="10" height="960" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="whisperx-lifeline" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="645" y="160" width="10" height="960" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="klue-lifeline" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="775" y="160" width="10" height="960" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="qwen3-lifeline" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="905" y="160" width="10" height="960" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="assigner-lifeline" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="1045" y="160" width="10" height="960" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="notion-lifeline" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="1195" y="160" width="10" height="960" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="jira-lifeline" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="1345" y="160" width="10" height="960" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="db-lifeline" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="1495" y="160" width="10" height="960" as="geometry"/>
+        </mxCell>
+        
+        <!-- 메시지 플로우 -->
+        
+        <!-- 1. 사용자 입력 -->
+        <mxCell id="msg1" value="1. /tk start 명령어" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="180" as="sourcePoint"/>
+            <mxPoint x="235" y="180" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 2. 모달 표시 -->
+        <mxCell id="msg2" value="2. 업로드 모달 표시" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="235" y="200" as="sourcePoint"/>
+            <mxPoint x="100" y="200" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 3. 파일 업로드 -->
+        <mxCell id="msg3" value="3. 음성 파일 업로드" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="220" as="sourcePoint"/>
+            <mxPoint x="235" y="220" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 4. 파일 전송 -->
+        <mxCell id="msg4" value="4. 파일 전송 및 메타데이터" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="245" y="240" as="sourcePoint"/>
+            <mxPoint x="375" y="240" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 5. 파일 검증 -->
+        <mxCell id="msg5" value="5. 파일 검증 및 저장" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="385" y="260" as="sourcePoint"/>
+            <mxPoint x="1495" y="260" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 6. AI 처리 시작 -->
+        <mxCell id="msg6" value="6. AI 처리 요청" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="385" y="300" as="sourcePoint"/>
+            <mxPoint x="515" y="300" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 7. WhisperX 처리 -->
+        <mxCell id="msg7" value="7. 음성 전사 요청" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="525" y="320" as="sourcePoint"/>
+            <mxPoint x="645" y="320" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 8. WhisperX 결과 -->
+        <mxCell id="msg8" value="8. 전사 결과 반환" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="645" y="340" as="sourcePoint"/>
+            <mxPoint x="525" y="340" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 9. KLUE-BERT 처리 -->
+        <mxCell id="msg9" value="9. 핵심 내용 추출 요청" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="525" y="360" as="sourcePoint"/>
+            <mxPoint x="775" y="360" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 10. KLUE-BERT 결과 -->
+        <mxCell id="msg10" value="10. 필터링된 텍스트 반환" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="775" y="380" as="sourcePoint"/>
+            <mxPoint x="525" y="380" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 11. Qwen3 처리 -->
+        <mxCell id="msg11" value="11. 프로젝트 문서 생성 요청" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="525" y="400" as="sourcePoint"/>
+            <mxPoint x="905" y="400" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 12. Qwen3 결과 -->
+        <mxCell id="msg12" value="12. 구조화된 프로젝트 문서" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="905" y="420" as="sourcePoint"/>
+            <mxPoint x="525" y="420" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 13. AI 결과 반환 -->
+        <mxCell id="msg13" value="13. AI 처리 결과 반환" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="515" y="440" as="sourcePoint"/>
+            <mxPoint x="385" y="440" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 14. 스마트 배정 -->
+        <mxCell id="msg14" value="14. 업무 배정 요청" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="385" y="480" as="sourcePoint"/>
+            <mxPoint x="1045" y="480" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 15. 사용자 정보 조회 -->
+        <mxCell id="msg15" value="15. 사용자 스킬 정보 조회" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1055" y="500" as="sourcePoint"/>
+            <mxPoint x="1495" y="500" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 16. 사용자 정보 반환 -->
+        <mxCell id="msg16" value="16. 사용자 데이터 반환" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1495" y="520" as="sourcePoint"/>
+            <mxPoint x="1055" y="520" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 17. 배정 결과 -->
+        <mxCell id="msg17" value="17. 배정 결과 반환" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1045" y="540" as="sourcePoint"/>
+            <mxPoint x="385" y="540" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 18. Notion 페이지 생성 -->
+        <mxCell id="msg18" value="18. Notion 페이지 생성 요청" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="385" y="580" as="sourcePoint"/>
+            <mxPoint x="1195" y="580" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 19. Notion 생성 완료 -->
+        <mxCell id="msg19" value="19. 페이지 생성 완료" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1195" y="600" as="sourcePoint"/>
+            <mxPoint x="385" y="600" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 20. JIRA 이슈 생성 -->
+        <mxCell id="msg20" value="20. JIRA 이슈 생성 요청" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="385" y="640" as="sourcePoint"/>
+            <mxPoint x="1345" y="640" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 21. JIRA 생성 완료 -->
+        <mxCell id="msg21" value="21. 이슈 생성 완료" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1345" y="660" as="sourcePoint"/>
+            <mxPoint x="385" y="660" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 22. 데이터 저장 -->
+        <mxCell id="msg22" value="22. 프로젝트 데이터 저장" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="385" y="700" as="sourcePoint"/>
+            <mxPoint x="1495" y="700" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 23. 저장 완료 -->
+        <mxCell id="msg23" value="23. 저장 완료" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1495" y="720" as="sourcePoint"/>
+            <mxPoint x="385" y="720" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 24. 완료 알림 -->
+        <mxCell id="msg24" value="24. 처리 완료 알림" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="375" y="760" as="sourcePoint"/>
+            <mxPoint x="245" y="760" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 25. 결과 전송 -->
+        <mxCell id="msg25" value="25. 결과 링크 전송" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="235" y="780" as="sourcePoint"/>
+            <mxPoint x="100" y="780" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 단계 구분선 -->
+        <mxCell id="phase1" value="Phase 1: 음성 입력 및 파일 처리" style="text;html=1;strokeColor=none;fillColor=#ffebee;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="170" width="200" height="30" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="phase2" value="Phase 2: 3단계 AI 처리" style="text;html=1;strokeColor=none;fillColor=#ffebee;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="290" width="200" height="30" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="phase3" value="Phase 3: 스마트 배정 및 외부 연동" style="text;html=1;strokeColor=none;fillColor=#ffebee;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="430" width="200" height="30" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="phase4" value="Phase 4: 완료 및 알림" style="text;html=1;strokeColor=none;fillColor=#ffebee;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="590" width="200" height="30" as="geometry"/>
+        </mxCell>
+        
+        
+        <!-- 범례 -->
+        <mxCell id="legend" value="범례" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="700" width="60" height="30" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="legend-sync" value="동기 호출" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="50" y="730" as="sourcePoint"/>
+            <mxPoint x="120" y="730" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="legend-async" value="비동기 응답" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="50" y="750" as="sourcePoint"/>
+            <mxPoint x="120" y="750" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 색상 범례 -->
+        <mxCell id="color-legend" value="색상 범례" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="700" width="80" height="30" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="color-client" value="클라이언트" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b1fa2;strokeColor=#4a148c;fontColor=white;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="200" y="730" width="60" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="color-backend" value="백엔드" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f57c00;strokeColor=#e65100;fontColor=white;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="270" y="730" width="60" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="color-ai" value="AI 엔진" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d32f2f;strokeColor=#b71c1c;fontColor=white;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="340" y="730" width="60" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="color-business" value="비즈니스" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#388e3c;strokeColor=#1b5e20;fontColor=white;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="410" y="730" width="60" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="color-data" value="데이터" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0277bd;strokeColor=#01579b;fontColor=white;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="480" y="730" width="60" height="20" as="geometry"/>
+        </mxCell>
+        
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

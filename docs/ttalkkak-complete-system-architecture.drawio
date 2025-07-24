@@ -1,0 +1,254 @@
+<mxfile host="65bd71144e">
+    <diagram name="TtalKkak 완전 시스템 아키텍쳐" id="ttalkkak-complete-system">
+        <mxGraphModel dx="1133" dy="988" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1400" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <!-- 제목 -->
+                <mxCell id="title" value="TtalKkak AI 프로젝트 관리 시스템 아키텍쳐" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=28;fontStyle=3;fontColor=#1976D2;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="10" width="1000" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="subtitle" value="음성 입력 → AI 처리 (2단계) → 스마트 배정 → 외부 연동 (Slack/Notion/JIRA) → 완료" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="60" width="1000" height="40" as="geometry"/>
+                </mxCell>
+                
+                <!-- 클라이언트 레이어 (보라색) -->
+                <mxCell id="ui-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;strokeWidth=3;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="120" width="280" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="ui-title" value="1. 클라이언트 레이어" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#7b1fa2;" parent="1" vertex="1">
+                    <mxGeometry x="130" y="130" width="200" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="slack-bot" value="Slack Bot&#10;@slack/bolt&#10;• /tk 명령어&#10;• 음성 파일 수신&#10;• 실시간 알림" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b1fa2;strokeColor=#4a148c;fontColor=white;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="160" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="web-dashboard" value="웹 대시보드&#10;React + TypeScript&#10;• 프로젝트 관리&#10;• 진행 상황&#10;• 설정" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b1fa2;strokeColor=#4a148c;fontColor=white;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="160" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="chrome-extension" value="Chrome 확장&#10;JavaScript&#10;• 웹 페이지 연동&#10;• 빠른 업무 생성" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b1fa2;strokeColor=#4a148c;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="135" y="250" width="120" height="70" as="geometry"/>
+                </mxCell>
+                
+                <!-- 백엔드 API 레이어 (주황색) -->
+                <mxCell id="backend-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=3;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="120" width="320" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="backend-title" value="2. 백엔드 API 레이어" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#f57c00;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="130" width="200" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="express-server" value="Express 서버&#10;server.ts (Port: 3500)&#10;• API 게이트웨이&#10;• OAuth 인증&#10;• 파일 업로드" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f57c00;strokeColor=#e65100;fontColor=white;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="160" width="130" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="slack-handler" value="Slack 핸들러&#10;slack-handler.js&#10;• 이벤트 처리&#10;• 모달 관리&#10;• 명령어 처리" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f57c00;strokeColor=#e65100;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="550" y="160" width="130" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="tenant-middleware" value="멀티테넌트 지원&#10;tenant.ts&#10;• 테넌트 격리&#10;• 리소스 분리&#10;• 보안 관리" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f57c00;strokeColor=#e65100;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="475" y="250" width="130" height="70" as="geometry"/>
+                </mxCell>
+                
+                <!-- AI 처리 엔진 (빨간색) -->
+                <mxCell id="ai-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#d32f2f;strokeWidth=3;" vertex="1" parent="1">
+                    <mxGeometry x="750" y="120" width="350" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="ai-title" value="3. AI 처리 엔진 (Runpod)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#d32f2f;" vertex="1" parent="1">
+                    <mxGeometry x="850" y="130" width="200" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="ai-server" value="AI 서버&#10;FastAPI + Python&#10;• 2단계 파이프라인&#10;• GPU 가속 처리" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d32f2f;strokeColor=#b71c1c;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="770" y="160" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="whisper-stt" value="WhisperX STT&#10;large-v3 모델&#10;• 음성 전사&#10;• 화자 구분&#10;• 다국어 지원" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d32f2f;strokeColor=#b71c1c;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="910" y="160" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="kcbert-filter" value="KcBERT 필터링&#10;beomi/KcBERT&#10;• 회의록 핵심부분 추출&#10;• 토큰 최적화&#10;• 성능 향상" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d32f2f;strokeColor=#b71c1c;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="770" y="240" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="qwen3-llm" value="Qwen3-32B-AWQ&#10;LLM 모델&#10;• Stage 1: 기획안&#10;• Stage 2: PRD&#10;• 업무 분해" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d32f2f;strokeColor=#b71c1c;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="910" y="240" width="120" height="70" as="geometry"/>
+                </mxCell>
+                
+                <!-- 비즈니스 서비스 레이어 (초록색) -->
+                <mxCell id="smart-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e8;strokeColor=#388e3c;strokeWidth=3;" vertex="1" parent="1">
+                    <mxGeometry x="1150" y="120" width="320" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="smart-title" value="4. 비즈니스 서비스" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#388e3c;" vertex="1" parent="1">
+                    <mxGeometry x="1250" y="130" width="200" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="notion-service" value="Notion 서비스&#10;notion-service.ts&#10;• 페이지 생성&#10;• 블록 구조화&#10;• OAuth 관리" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#388e3c;strokeColor=#1b5e20;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="1170" y="160" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="jira-service" value="JIRA 서비스&#10;jira-service.ts&#10;• 이슈 생성&#10;• Epic/Task 매핑&#10;• 토큰 관리" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#388e3c;strokeColor=#1b5e20;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="1310" y="160" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="task-assigner" value="스마트 배정 서비스&#10;smart-task-assigner.ts&#10;• 스킬 매칭 (40%)&#10;• 워크로드 (30%)&#10;• 경험/우선순위" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#388e3c;strokeColor=#1b5e20;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="1240" y="240" width="130" height="70" as="geometry"/>
+                </mxCell>
+                
+                <!-- 데이터 레이어 (파란색) -->
+                <mxCell id="db-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0277bd;strokeWidth=3;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="350" width="650" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="db-title" value="5. 데이터 레이어" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#0277bd;" vertex="1" parent="1">
+                    <mxGeometry x="320" y="360" width="200" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="postgresql" value="PostgreSQL&#10;Port: 5432&#10;• 멀티테넌트 지원&#10;• 트랜잭션 관리&#10;• 고가용성" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0277bd;strokeColor=#01579b;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="70" y="390" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="prisma-orm" value="Prisma ORM&#10;schema.prisma&#10;• 타입 안전성&#10;• 스키마 관리&#10;• 마이그레이션" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0277bd;strokeColor=#01579b;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="210" y="390" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="redis-cache" value="Redis 캐시&#10;Port: 6379&#10;• 세션 관리&#10;• 임시 데이터&#10;• 작업 큐" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0277bd;strokeColor=#01579b;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="350" y="390" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="project-data" value="프로젝트 데이터&#10;• Project&#10;• Task (계층적)&#10;• TaskMetadata&#10;• Integration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0277bd;strokeColor=#01579b;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="490" y="390" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="user-data" value="사용자 데이터&#10;• User (스킬, 경험)&#10;• Tenant&#10;• SlackInput&#10;• 성과 분석" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0277bd;strokeColor=#01579b;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="280" y="470" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="assignment-logs" value="배정 로그&#10;• 스코어링 결과&#10;• 배정 히스토리&#10;• 성능 메트릭" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0277bd;strokeColor=#01579b;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="420" y="470" width="120" height="70" as="geometry"/>
+                </mxCell>
+                
+                <!-- 외부 연동 레이어 (회색) -->
+                <mxCell id="external-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#616161;strokeWidth=3;" vertex="1" parent="1">
+                    <mxGeometry x="750" y="350" width="720" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="external-title" value="6. 외부 서비스 연동" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#616161;" vertex="1" parent="1">
+                    <mxGeometry x="1050" y="360" width="200" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="slack-api" value="Slack API&#10;slack.com&#10;• 봇 토큰&#10;• 파일 업로드&#10;• 실시간 이벤트" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;strokeColor=#424242;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="770" y="390" width="130" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="notion-api" value="Notion API&#10;api.notion.com&#10;• OAuth 2.0&#10;• 페이지 생성&#10;• 워크스페이스 연동" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;strokeColor=#424242;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="920" y="390" width="130" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="jira-api" value="JIRA API&#10;atlassian.com&#10;• OAuth 2.0 (3LO)&#10;• 이슈 생성&#10;• 프로젝트 관리" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;strokeColor=#424242;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="390" width="130" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="ai-server-external" value="AI 서버&#10;Runpod Cloud&#10;• GPU 인스턴스&#10;• 고성능 처리&#10;• 스케일링" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;strokeColor=#424242;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="1220" y="390" width="130" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="oauth-manager" value="OAuth 관리&#10;• 토큰 암호화&#10;• 자동 갱신&#10;• 스코프 관리&#10;• 리프레시 토큰" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;strokeColor=#424242;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="980" y="470" width="130" height="70" as="geometry"/>
+                </mxCell>
+                
+                <!-- 데이터 흐름 화살표 -->
+                <mxCell id="flow1" value="음성 파일" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#7b1fa2;fontColor=#7b1fa2;" edge="1" parent="1" source="slack-bot" target="express-server">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="flow2" value="AI 처리" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#d32f2f;fontColor=#d32f2f;" edge="1" parent="1" source="slack-handler" target="ai-server">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="flow3" value="비즈니스 로직" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#388e3c;fontColor=#388e3c;" edge="1" parent="1" source="qwen3-llm" target="task-assigner">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="flow4" value="데이터 저장" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#0277bd;fontColor=#0277bd;" edge="1" parent="1" source="task-assigner" target="assignment-logs">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1305" y="330"/>
+                            <mxPoint x="480" y="330"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="flow5" value="외부 연동" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#616161;fontColor=#616161;" edge="1" parent="1" source="notion-service" target="notion-api">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="flow6" value="JIRA 연동" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#616161;fontColor=#616161;" edge="1" parent="1" source="jira-service" target="jira-api">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- 워크플로우 섹션 -->
+                <mxCell id="workflow-section" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=3;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="580" width="1420" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="workflow-title" value="🚀 TtalKkak 시스템 워크플로우 (실제 구현 기준)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#1976d2;" vertex="1" parent="1">
+                    <mxGeometry x="650" y="595" width="400" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- 워크플로우 단계들 -->
+                <mxCell id="step1" value="1. Slack 입력&#10;/tk start 명령&#10;음성/텍스트 업로드&#10;파일 검증" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b1fa2;strokeColor=#4a148c;fontColor=white;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="80" y="635" width="120" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="step2" value="2. AI 파이프라인&#10;• WhisperX 음성전사&#10;• KcBERT 핵심추출&#10;• Qwen3 기획안생성&#10;• 업무 분해" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d32f2f;strokeColor=#b71c1c;fontColor=white;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="635" width="120" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="step3" value="3. 스마트 배정&#10;스킬 매칭 (40%)&#10;워크로드 분석 (30%)&#10;경험/우선순위" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#388e3c;strokeColor=#1b5e20;fontColor=white;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="360" y="635" width="120" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="step4" value="4. Notion 생성&#10;페이지 자동 생성&#10;구조화된 문서&#10;프로젝트 정리" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;strokeColor=#424242;fontColor=white;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="500" y="635" width="120" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="step5" value="5. JIRA 이슈&#10;Epic/Task 생성&#10;계층 구조 매핑&#10;상태 동기화" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;strokeColor=#424242;fontColor=white;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="640" y="635" width="120" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="step6" value="6. 데이터 저장&#10;PostgreSQL 저장&#10;배정 로그&#10;성과 분석" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0277bd;strokeColor=#01579b;fontColor=white;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="780" y="635" width="120" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="step7" value="7. 실시간 알림&#10;Slack 알림&#10;진행 상황&#10;결과 링크" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b1fa2;strokeColor=#4a148c;fontColor=white;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="920" y="635" width="120" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="step8" value="8. 완료&#10;웹 대시보드 업데이트&#10;성과 지표 갱신&#10;시스템 모니터링" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b1fa2;strokeColor=#4a148c;fontColor=white;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="1060" y="635" width="120" height="100" as="geometry"/>
+                </mxCell>
+                
+                <!-- 워크플로우 화살표 -->
+                <mxCell id="arrow1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#1976d2;" edge="1" parent="1" source="step1" target="step2">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#1976d2;" edge="1" parent="1" source="step2" target="step3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#1976d2;" edge="1" parent="1" source="step3" target="step4">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#1976d2;" edge="1" parent="1" source="step4" target="step5">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#1976d2;" edge="1" parent="1" source="step5" target="step6">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#1976d2;" edge="1" parent="1" source="step6" target="step7">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#1976d2;" edge="1" parent="1" source="step7" target="step8">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- 범례 섹션 -->
+                <mxCell id="legend-section" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#666666;strokeWidth=2;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="800" width="1420" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-title" value="🎨 색상 구분" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+                    <mxGeometry x="700" y="810" width="120" height="20" as="geometry"/>
+                </mxCell>
+                
+                <!-- 범례 색상 박스들 -->
+                <mxCell id="legend-client" value="클라이언트" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b1fa2;strokeColor=#4a148c;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="80" y="840" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-backend" value="백엔드 API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f57c00;strokeColor=#e65100;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="200" y="840" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-ai" value="AI 엔진" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d32f2f;strokeColor=#b71c1c;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="320" y="840" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-business" value="비즈니스 서비스" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#388e3c;strokeColor=#1b5e20;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="440" y="840" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-data" value="데이터 레이어" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0277bd;strokeColor=#01579b;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="580" y="840" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-external" value="외부 서비스" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;strokeColor=#424242;fontColor=white;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="700" y="840" width="100" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- 기술 스택 정보 -->
+                <mxCell id="tech-info" value="💻 주요 기술 스택: Node.js + TypeScript, React, PostgreSQL + Prisma, Redis, Python + FastAPI, WhisperX, KcBERT(beomi), Qwen3-32B-AWQ" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;" vertex="1" parent="1">
+                    <mxGeometry x="850" y="845" width="600" height="20" as="geometry"/>
+                </mxCell>
+                
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

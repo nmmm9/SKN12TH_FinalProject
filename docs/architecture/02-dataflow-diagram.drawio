@@ -1,0 +1,310 @@
+<mxfile host="Electron" modified="2024-11-18T12:00:00.000Z" agent="Mozilla/5.0" version="22.1.11" etag="def456" type="device">
+  <diagram id="TtalKkak-DataFlow-Diagram" name="데이터 플로우 다이어그램">
+    <mxGraphModel dx="1422" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- 제목 -->
+        <mxCell id="title" value="TtalKkak 데이터 플로우 다이어그램" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="500" y="20" width="400" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- 시작점: 사용자 -->
+        <mxCell id="user-start" value="👤 사용자" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- 1단계: 음성 입력 -->
+        <mxCell id="slack-command" value="📱 Slack '/tk start'&#xa;명령어 실행" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="250" y="70" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="voice-upload" value="🎙️ 음성 파일&#xa;업로드&#xa;(최대 100MB)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="250" y="140" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="text-input" value="📝 회의록&#xa;텍스트 입력" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="250" y="210" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- 2단계: 전처리 -->
+        <mxCell id="file-validation" value="🔍 파일 검증&#xa;• 타입 확인&#xa;• 크기 제한&#xa;• 보안 검사" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="450" y="100" width="140" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="temp-storage" value="💾 임시 저장&#xa;transcript-input.txt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="450" y="200" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- 3단계: AI 처리 시작 -->
+        <mxCell id="ai-server-call" value="🧠 AI 서버 호출&#xa;Runpod AI Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#d79b00;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="150" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Stage 1: 음성 → 기획안 -->
+        <mxCell id="stage1-label" value="🎯 Stage 1: 음성 → 기획안" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="320" width="300" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="whisperx-stt" value="🎤 WhisperX&#xa;음성 전사&#xa;large-v3 모델" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="80" y="380" width="120" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="qwen-analysis" value="📊 Qwen3-32B-AWQ&#xa;회의록 구조화&#xa;텍스트 분석" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="230" y="380" width="120" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="notion-project" value="📋 Notion 기획안&#xa;생성&#xa;• 프로젝트 개요&#xa;• 섹션별 내용" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="380" y="380" width="140" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Stage 2: 기획안 → 업무 -->
+        <mxCell id="stage2-label" value="🎯 Stage 2: 기획안 → 업무 분해" style="text;html=1;strokeColor=#7b1fa2;fillColor=#f3e5f5;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="580" y="320" width="300" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="prd-generation" value="📝 PRD 생성&#xa;Product Requirements&#xa;Document" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="600" y="380" width="120" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="task-master" value="⚡ Task Master&#xa;변환&#xa;• Epic 생성&#xa;• Task 분해&#xa;• 우선순위 설정" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="750" y="380" width="130" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="task-metadata" value="📊 업무 메타데이터&#xa;• 예상 시간&#xa;• 필요 스킬&#xa;• 복잡도" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="910" y="380" width="130" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- 4단계: 스마트 업무 배정 -->
+        <mxCell id="smart-assigner-label" value="🎭 스마트 업무 배정 시스템" style="text;html=1;strokeColor=#d79b00;fillColor=#ffcccc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="520" width="400" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="user-profile-analysis" value="📊 사용자 프로필 분석&#xa;• 스킬 매칭 (40%)&#xa;• 워크로드 (30%)&#xa;• 경험 수준 (20%)&#xa;• 우선순위 (10%)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="80" y="580" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="scoring-algorithm" value="🎯 최적 배정 계산&#xa;스코어링 알고리즘&#xa;&#xa;총점 = (스킬×0.4) +&#xa;(워크로드×0.3) +&#xa;(경험×0.2) +&#xa;(우선순위×0.1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="270" y="580" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- 5단계: 외부 시스템 연동 -->
+        <mxCell id="external-integration-label" value="🔄 외부 시스템 연동" style="text;html=1;strokeColor=#0066cc;fillColor=#cce5ff;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="500" y="520" width="300" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="notion-page-creation" value="📝 Notion 페이지&#xa;생성&#xa;• 구조화된 문서&#xa;• 자동 링크 생성" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#cce5ff;strokeColor=#0066cc;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="520" y="580" width="130" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="jira-issue-creation" value="🎫 JIRA 이슈 생성&#xa;• Epic 생성&#xa;• Task 생성&#xa;• 계층 구조 매핑" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#cce5ff;strokeColor=#0066cc;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="680" y="580" width="130" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="database-storage" value="💾 데이터베이스&#xa;저장&#xa;PostgreSQL&#xa;• 프로젝트 정보&#xa;• 업무 데이터" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="840" y="580" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- 6단계: 결과 및 알림 -->
+        <mxCell id="notification-label" value="📢 결과 전달 및 알림" style="text;html=1;strokeColor=#c2185b;fillColor=#fce4ec;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="720" width="300" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="slack-notification" value="📢 Slack 알림&#xa;• 진행 상황&#xa;• 생성된 링크&#xa;• 배정 결과" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c2185b;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="80" y="780" width="130" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="result-links" value="🔗 결과 링크 제공&#xa;• Notion 페이지 URL&#xa;• JIRA 프로젝트 URL&#xa;• 실시간 상태" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c2185b;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="240" y="780" width="140" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- 데이터 저장소 -->
+        <mxCell id="postgresql-db" value="🗃️ PostgreSQL&#xa;• 프로젝트 정보&#xa;• 업무 데이터&#xa;• 사용자 프로필" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="300" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="redis-cache" value="🔄 Redis Cache&#xa;• 세션 정보&#xa;• 임시 데이터" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffebee;strokeColor=#d32f2f;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="400" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- 데이터 흐름 화살표 -->
+        <!-- 사용자 → 입력 단계 -->
+        <mxCell id="flow-1" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0066cc;" edge="1" parent="1" source="user-start" target="slack-command">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="180" y="130" as="sourcePoint" />
+            <mxPoint x="240" y="100" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-2" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0066cc;" edge="1" parent="1" source="user-start" target="voice-upload">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="180" y="140" as="sourcePoint" />
+            <mxPoint x="240" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-3" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0066cc;" edge="1" parent="1" source="user-start" target="text-input">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="180" y="150" as="sourcePoint" />
+            <mxPoint x="240" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 입력 → 전처리 -->
+        <mxCell id="flow-4" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0066cc;" edge="1" parent="1" source="voice-upload" target="file-validation">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="140" as="sourcePoint" />
+            <mxPoint x="450" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-5" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0066cc;" edge="1" parent="1" source="file-validation" target="temp-storage">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="520" y="190" as="sourcePoint" />
+            <mxPoint x="520" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 전처리 → AI 처리 -->
+        <mxCell id="flow-6" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#cc0000;" edge="1" parent="1" source="temp-storage" target="ai-server-call">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="600" y="220" as="sourcePoint" />
+            <mxPoint x="650" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Stage 1 플로우 -->
+        <mxCell id="flow-7" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#388e3c;" edge="1" parent="1" source="ai-server-call" target="whisperx-stt">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="650" y="220" as="sourcePoint" />
+            <mxPoint x="200" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-8" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#388e3c;" edge="1" parent="1" source="whisperx-stt" target="qwen-analysis">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="210" y="415" as="sourcePoint" />
+            <mxPoint x="230" y="415" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-9" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#388e3c;" edge="1" parent="1" source="qwen-analysis" target="notion-project">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="415" as="sourcePoint" />
+            <mxPoint x="380" y="415" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Stage 2 플로우 -->
+        <mxCell id="flow-10" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#7b1fa2;" edge="1" parent="1" source="notion-project" target="prd-generation">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="530" y="415" as="sourcePoint" />
+            <mxPoint x="600" y="415" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-11" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#7b1fa2;" edge="1" parent="1" source="prd-generation" target="task-master">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="730" y="415" as="sourcePoint" />
+            <mxPoint x="750" y="415" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-12" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#7b1fa2;" edge="1" parent="1" source="task-master" target="task-metadata">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="890" y="415" as="sourcePoint" />
+            <mxPoint x="910" y="415" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 스마트 배정 플로우 -->
+        <mxCell id="flow-13" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#d79b00;" edge="1" parent="1" source="task-metadata" target="user-profile-analysis">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="460" as="sourcePoint" />
+            <mxPoint x="200" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-14" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#d79b00;" edge="1" parent="1" source="user-profile-analysis" target="scoring-algorithm">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="250" y="620" as="sourcePoint" />
+            <mxPoint x="270" y="620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 외부 연동 플로우 -->
+        <mxCell id="flow-15" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0066cc;" edge="1" parent="1" source="scoring-algorithm" target="notion-page-creation">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="440" y="620" as="sourcePoint" />
+            <mxPoint x="520" y="620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-16" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0066cc;" edge="1" parent="1" source="scoring-algorithm" target="jira-issue-creation">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="440" y="640" as="sourcePoint" />
+            <mxPoint x="680" y="620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-17" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#388e3c;" edge="1" parent="1" source="scoring-algorithm" target="database-storage">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="440" y="660" as="sourcePoint" />
+            <mxPoint x="840" y="620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 결과 알림 플로우 -->
+        <mxCell id="flow-18" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#c2185b;" edge="1" parent="1" source="notion-page-creation" target="slack-notification">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="520" y="670" as="sourcePoint" />
+            <mxPoint x="150" y="780" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-19" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#c2185b;" edge="1" parent="1" source="slack-notification" target="result-links">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="220" y="815" as="sourcePoint" />
+            <mxPoint x="240" y="815" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-20" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#c2185b;" edge="1" parent="1" source="result-links" target="user-start">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="300" y="780" as="sourcePoint" />
+            <mxPoint x="110" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 데이터베이스 연결 -->
+        <mxCell id="db-flow-1" value="데이터 참조" style="endArrow=none;dashed=1;html=1;rounded=0;strokeColor=#999999;fontSize=10;" edge="1" parent="1" source="user-profile-analysis" target="postgresql-db">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="240" y="580" as="sourcePoint" />
+            <mxPoint x="1100" y="340" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="db-flow-2" value="캐시 저장" style="endArrow=none;dashed=1;html=1;rounded=0;strokeColor=#999999;fontSize=10;" edge="1" parent="1" source="database-storage" target="redis-cache">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="970" y="620" as="sourcePoint" />
+            <mxPoint x="1100" y="430" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- JSON 데이터 샘플 박스 -->
+        <mxCell id="json-sample" value="📄 데이터 형식 예시&#xa;&#xa;Stage 1 출력:&#xa;{&#xa;  &quot;transcript&quot;: &quot;전사된 텍스트&quot;,&#xa;  &quot;notion_project&quot;: {&#xa;    &quot;title&quot;: &quot;프로젝트명&quot;,&#xa;    &quot;sections&quot;: [...]&#xa;  }&#xa;}&#xa;&#xa;Stage 2 출력:&#xa;{&#xa;  &quot;task_master_prd&quot;: {&#xa;    &quot;tasks&quot;: [{&#xa;      &quot;title&quot;: &quot;업무명&quot;,&#xa;      &quot;priority&quot;: &quot;HIGH&quot;,&#xa;      &quot;estimated_hours&quot;: 40&#xa;    }]&#xa;  }&#xa;}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#666666;fontSize=9;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="520" width="250" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- 성능 최적화 박스 -->
+        <mxCell id="performance-note" value="⚡ 성능 최적화&#xa;&#xa;• 비동기 처리: 모든 외부 API 호출&#xa;• 병렬 처리: Notion/JIRA 동시 생성&#xa;• 캐시 활용: 사용자 프로필, 설정&#xa;• 스트리밍: 대용량 파일 처리&#xa;• 에러 처리: AI 서버 장애 시 더미 데이터" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e8;strokeColor=#388e3c;fontSize=10;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="750" width="250" height="120" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
