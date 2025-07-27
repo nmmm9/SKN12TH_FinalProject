@@ -100,4 +100,4 @@ test-*.js
 # Korean filename issue
 "\343\204\264\343\204\264.md" 
 
-*.pt
+*.pt*.pt
