@@ -413,10 +413,37 @@ class AIService {
    */
   async generateTasks(prd: any): Promise<GeneratedTasksResult> {
     try {
-      console.log(`⚡ Generating tasks from PRD using AI fallback`);
+      console.log(`⚡ Generating tasks from PRD using VLLM AI server`);
 
-      // RunPod 서버 타임아웃 문제로 임시 더미 데이터 사용
-      console.log('⚠️ Using fallback dummy tasks due to RunPod timeout issues');
+      // 실제 AI 서버 호출 시도
+      try {
+        const response = await fetch(`${this.baseUrl}/generate-tasks`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(prd),
+          timeout: this.timeout
+        });
+
+        if (response.ok) {
+          const result: GeneratedTasksResult = await response.json();
+          
+          if (result.success) {
+            console.log(`✅ Tasks generated successfully via VLLM: ${result.tasks?.length || 0} tasks`);
+            return result;
+          } else {
+            console.error(`❌ AI task generation failed: ${result.error}`);
+          }
+        } else {
+          console.warn(`AI 서버 응답 오류: ${response.status}`);
+        }
+      } catch (error) {
+        console.warn(`AI 서버 연결 실패: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+
+      // AI 서버 실패 시에만 더미 데이터 사용
+      console.log('⚠️ AI server failed, using fallback dummy tasks');
       
       // 현재 날짜 기준으로 동적 날짜 생성
       const today = new Date();
@@ -670,18 +697,41 @@ class AIService {
 
       // 먼저 실제 AI 서버 연결 시도
       try {
-        const formData = new FormData();
-        formData.append('audio', audioBuffer, {
-          filename: filename || 'input.txt',
-          contentType: filename?.endsWith('.txt') ? 'text/plain' : 'audio/wav'
-        });
+        // 텍스트 입력인지 확인
+        const isTextInput = filename?.endsWith('.txt') || audioBuffer.toString('utf-8').length < 10000;
+        
+        let response;
+        if (isTextInput) {
+          // 텍스트 입력 - 최종 파이프라인 API 사용
+          const transcript = audioBuffer.toString('utf-8');
+          response = await fetch(`${this.baseUrl}/pipeline-final`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              transcript: transcript,
+              generate_notion: true,
+              generate_tasks: true,
+              num_tasks: 5
+            }),
+            timeout: this.timeout
+          });
+        } else {
+          // 기존 음성 파일 API 사용
+          const formData = new FormData();
+          formData.append('audio', audioBuffer, {
+            filename: filename || 'audio.wav',
+            contentType: 'audio/wav'
+          });
 
-        const response = await fetch(`${this.baseUrl}/two-stage-pipeline`, {
-          method: 'POST',
-          body: formData,
-          timeout: this.timeout,
-          headers: formData.getHeaders()
-        });
+          response = await fetch(`${this.baseUrl}/pipeline-final`, {
+            method: 'POST',
+            body: formData,
+            timeout: this.timeout,
+            headers: formData.getHeaders()
+          });
+        }
 
         if (response.ok) {
           const result: TwoStagePipelineResult = await response.json();

@@ -1,3 +1,0 @@
-"""
-Speech-to-Text Processors
-"""

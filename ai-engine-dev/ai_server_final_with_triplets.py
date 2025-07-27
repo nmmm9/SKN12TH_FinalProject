@@ -48,7 +48,7 @@ try:
     from triplet_processor import get_triplet_processor
     from bert_classifier import get_bert_classifier
     TRIPLET_AVAILABLE = True
-    logger.info("✅ Triplet + BERT 모듈 로드 성공")
+    print("✅ Triplet + BERT 모듈 로드 성공")
 except ImportError as e:
     logger.warning(f"⚠️ Triplet + BERT 모듈 로드 실패: {e}")
     TRIPLET_AVAILABLE = False
@@ -177,36 +177,52 @@ def load_qwen3():
             use_vllm = os.getenv("USE_VLLM", "true").lower() == "true"
             
             if use_vllm:
-                logger.info("⚡ Using VLLM for ultra-fast inference")
-                from vllm import LLM
-                from transformers import AutoTokenizer
+                try:
+                    logger.info("⚡ Using VLLM for ultra-fast inference")
+                    from vllm import LLM
+                    from transformers import AutoTokenizer
+                except ImportError as e:
+                    logger.warning(f"⚠️ VLLM import failed: {e}")
+                    logger.info("🔄 Falling back to Transformers...")
+                    use_vllm = False
                 
+            if use_vllm:
                 model_name = "Qwen/Qwen3-32B-AWQ"
                 
-                # VLLM 모델 로딩
-                qwen_model = LLM(
-                    model=model_name,
-                    tensor_parallel_size=1,  # GPU 개수에 맞게 자동 조정
-                    gpu_memory_utilization=0.9,  # GPU 메모리 90% 사용
-                    trust_remote_code=True,
-                    quantization="awq",  # AWQ 양자화 명시
-                    max_model_len=32768,  # 최대 토큰 길이
-                    enforce_eager=False,  # CUDA 그래프 최적화
-                    swap_space=2,  # 2GB swap space
-                    disable_log_requests=True  # 요청 로그 비활성화 (성능향상)
-                )
+                try:
+                    # VLLM 모델 로딩
+                    qwen_model = LLM(
+                        model=model_name,
+                        tensor_parallel_size=1,
+                        gpu_memory_utilization=0.7,  # GPU 메모리 70%로 복원
+                        trust_remote_code=True,
+                        quantization="awq",  # AWQ 양자화 명시
+                        max_model_len=16384,  # 토큰 길이 원래대로 복원
+                        enforce_eager=True,  # CUDA 그래프 비활성화 (메모리 절약)
+                        swap_space=4,  # 4GB swap space로 복원
+                        max_num_seqs=64  # 동시 시퀀스 수 원래대로 복원
+                        # 메모리 절약을 위한 보수적 설정
+                    )
+                    
+                    # 토크나이저는 별도 로딩 (템플릿 적용용)
+                    qwen_tokenizer = AutoTokenizer.from_pretrained(
+                        model_name, trust_remote_code=True
+                    )
+                    
+                    logger.info("🎉 VLLM Qwen3-32B-AWQ loaded successfully")
+                except Exception as e:
+                    logger.error(f"❌ VLLM model loading failed: {e}")
+                    logger.info("🔄 Falling back to Transformers...")
+                    use_vllm = False
                 
-                # 토크나이저는 별도 로딩 (템플릿 적용용)
-                qwen_tokenizer = AutoTokenizer.from_pretrained(
-                    model_name, trust_remote_code=True
-                )
-                
-                logger.info("🎉 VLLM Qwen3-32B-AWQ loaded successfully")
-                
-            else:
+            if not use_vllm:
                 # 기존 Transformers 방식 (백업용)
-                logger.info("📚 Using Transformers (fallback mode)")
-                from transformers import AutoTokenizer, AutoModelForCausalLM
+                try:
+                    logger.info("📚 Using Transformers (fallback mode)")
+                    from transformers import AutoTokenizer, AutoModelForCausalLM
+                except ImportError as e:
+                    logger.error(f"❌ Transformers import failed: {e}")
+                    raise RuntimeError("Both VLLM and Transformers unavailable!")
                 
                 model_name = "Qwen/Qwen3-32B-AWQ"
                 
@@ -948,6 +964,189 @@ async def two_stage_analysis(request: TwoStageAnalysisRequest):
             error=str(e)
         )
 
+@app.post("/two-stage-pipeline-text", response_model=EnhancedTwoStageResult)
+async def enhanced_two_stage_pipeline_text(request: dict):
+    """텍스트 입력 전용 2단계 파이프라인: 텍스트 → Triplet 필터링 → 2단계 분석"""
+    try:
+        logger.info("🚀 Starting text-based 2-stage pipeline...")
+        
+        transcript = request.get("transcript", "")
+        if not transcript:
+            raise ValueError("transcript가 필요합니다")
+            
+        enable_bert_filtering = request.get("enable_bert_filtering", True)
+        
+        # VLLM 사용 여부 확인
+        use_vllm = os.getenv("USE_VLLM", "true").lower() == "true"
+        
+        # 텍스트를 직접 처리하여 Triplet 생성 및 필터링
+        if TRIPLET_AVAILABLE and enable_bert_filtering:
+            try:
+                triplet_processor = get_triplet_processor()
+                # 텍스트를 WhisperX 형식으로 변환
+                mock_whisperx_result = {
+                    "segments": [{"text": transcript, "start": 0, "end": 60}],
+                    "full_text": transcript,
+                    "language": "ko"
+                }
+                
+                enhanced_result = triplet_processor.process_whisperx_result(
+                    whisperx_result=mock_whisperx_result,
+                    enable_bert_filtering=enable_bert_filtering,
+                    save_noise_log=False
+                )
+                
+                if enhanced_result["success"]:
+                    filtered_transcript = enhanced_result["filtered_transcript"]
+                    triplet_stats = enhanced_result.get("triplet_stats", {})
+                    classification_stats = enhanced_result.get("classification_stats", {})
+                else:
+                    filtered_transcript = transcript
+                    triplet_stats = {}
+                    classification_stats = {}
+                    
+            except Exception as e:
+                logger.warning(f"Triplet 처리 실패, 원본 텍스트 사용: {e}")
+                filtered_transcript = transcript
+                triplet_stats = {}
+                classification_stats = {}
+        else:
+            filtered_transcript = transcript
+            triplet_stats = {}
+            classification_stats = {}
+        
+        # Stage 1: Notion 프로젝트 생성
+        stage1_notion = None
+        if request.get("generate_notion", True):
+            try:
+                # 기존 generate_notion_project 함수 로직 사용
+                system_prompt = generate_notion_project_prompt()
+                user_prompt = f"다음 회의록을 바탕으로 노션 기획안을 작성해주세요:\n\n{filtered_transcript}"
+                
+                if use_vllm and qwen_model and qwen_tokenizer:
+                    from vllm import SamplingParams
+                    sampling_params = SamplingParams(
+                        temperature=0.3,
+                        max_tokens=2048,
+                        stop=["<|im_end|>", "<|endoftext|>"]
+                    )
+                    
+                    messages = [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ]
+                    
+                    formatted_prompt = qwen_tokenizer.apply_chat_template(
+                        messages, tokenize=False, add_generation_prompt=True
+                    )
+                    
+                    outputs = qwen_model.generate([formatted_prompt], sampling_params)
+                    result_text = outputs[0].outputs[0].text.strip()
+                    
+                    try:
+                        import json
+                        stage1_notion = json.loads(result_text)
+                    except:
+                        stage1_notion = {"title": "AI 프로젝트", "overview": result_text}
+                        
+            except Exception as e:
+                logger.error(f"Notion 생성 실패: {e}")
+                stage1_notion = None
+        
+        # Stage 2: PRD 생성
+        stage2_prd = None
+        if stage1_notion and request.get("generate_prd", True):
+            try:
+                system_prompt = generate_task_master_prd_prompt()
+                user_prompt = f"다음 노션 프로젝트를 바탕으로 Task Master PRD를 작성해주세요:\n\n{json.dumps(stage1_notion, ensure_ascii=False, indent=2)}"
+                
+                if use_vllm and qwen_model and qwen_tokenizer:
+                    from vllm import SamplingParams
+                    sampling_params = SamplingParams(
+                        temperature=0.3,
+                        max_tokens=2048,
+                        stop=["<|im_end|>", "<|endoftext|>"]
+                    )
+                    
+                    messages = [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ]
+                    
+                    formatted_prompt = qwen_tokenizer.apply_chat_template(
+                        messages, tokenize=False, add_generation_prompt=True
+                    )
+                    
+                    outputs = qwen_model.generate([formatted_prompt], sampling_params)
+                    result_text = outputs[0].outputs[0].text.strip()
+                    
+                    try:
+                        stage2_prd = json.loads(result_text)
+                    except:
+                        stage2_prd = {"title": "PRD", "overview": result_text}
+                        
+            except Exception as e:
+                logger.error(f"PRD 생성 실패: {e}")
+                stage2_prd = None
+        
+        # Stage 3: 업무 생성
+        stage3_tasks = None
+        if stage2_prd and request.get("generate_tasks", True):
+            try:
+                system_prompt = generate_meeting_analysis_system_prompt()
+                user_prompt = f"다음 PRD를 바탕으로 업무 태스크들을 생성해주세요:\n\n{json.dumps(stage2_prd, ensure_ascii=False, indent=2)}"
+                
+                if use_vllm and qwen_model and qwen_tokenizer:
+                    from vllm import SamplingParams
+                    sampling_params = SamplingParams(
+                        temperature=0.3,
+                        max_tokens=2048,
+                        stop=["<|im_end|>", "<|endoftext|>"]
+                    )
+                    
+                    messages = [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ]
+                    
+                    formatted_prompt = qwen_tokenizer.apply_chat_template(
+                        messages, tokenize=False, add_generation_prompt=True
+                    )
+                    
+                    outputs = qwen_model.generate([formatted_prompt], sampling_params)
+                    result_text = outputs[0].outputs[0].text.strip()
+                    
+                    try:
+                        stage3_tasks = json.loads(result_text)
+                    except:
+                        stage3_tasks = {"action_items": []}
+                        
+            except Exception as e:
+                logger.error(f"업무 생성 실패: {e}")
+                stage3_tasks = None
+        
+        return EnhancedTwoStageResult(
+            success=True,
+            triplet_stats=triplet_stats,
+            classification_stats=classification_stats,
+            stage1_notion=stage1_notion,
+            stage2_prd=stage2_prd,
+            stage3_tasks=stage3_tasks,
+            formatted_notion=format_notion_project(stage1_notion) if stage1_notion else None,
+            formatted_prd=format_task_master_prd(stage2_prd) if stage2_prd else None,
+            original_transcript_length=len(transcript),
+            filtered_transcript_length=len(filtered_transcript),
+            noise_reduction_ratio=1.0 - (len(filtered_transcript) / len(transcript)) if transcript else 0,
+            processing_time=time.time() - time.time()
+        )
+        
+    except Exception as e:
+        logger.error(f"❌ Text-based 2-stage pipeline error: {e}")
+        return EnhancedTwoStageResult(
+            success=False,
+            error=str(e)
+        )
+
 @app.post("/two-stage-pipeline", response_model=EnhancedTwoStageResult)
 async def enhanced_two_stage_pipeline(
     audio: UploadFile = File(...),
@@ -1041,31 +1240,92 @@ async def enhanced_two_stage_pipeline(
 
 @app.post("/pipeline-final", response_model=Dict[str, Any])
 async def final_pipeline(
-    audio: UploadFile = File(...),
+    audio: UploadFile = File(None),
+    transcript: str = None,
     generate_notion: bool = True,
     generate_tasks: bool = True,
     num_tasks: int = 5
 ):
-    """최종 전체 파이프라인: 음성 → 전사 → 2단계 분석 (기존 호환성 유지)"""
+    """🚀 최종 전체 파이프라인: 음성/텍스트 자동 감지 → VLLM 초고속 분석"""
     try:
         logger.info("🚀 Starting final pipeline with 2-stage process...")
         
         start_time = time.time()
         
-        # 1단계: 전사
-        logger.info("📝 Step 1: Transcribing audio...")
-        transcribe_result = await transcribe_audio(audio)
-        if not transcribe_result.success:
+        # 입력 타입 자동 감지 및 BERT 필터링
+        if transcript:
+            # 텍스트 입력 + BERT 필터링
+            logger.info("📝 Text input detected, applying BERT filtering...")
+            if TRIPLET_AVAILABLE:
+                try:
+                    triplet_processor = get_triplet_processor()
+                    mock_whisperx_result = {
+                        "segments": [{"text": transcript, "start": 0, "end": 60}],
+                        "full_text": transcript,
+                        "language": "ko"
+                    }
+                    
+                    enhanced_result = triplet_processor.process_whisperx_result(
+                        whisperx_result=mock_whisperx_result,
+                        enable_bert_filtering=True,
+                        save_noise_log=False
+                    )
+                    
+                    if enhanced_result["success"]:
+                        full_text = enhanced_result["filtered_transcript"]
+                        logger.info(f"✅ BERT filtering applied: {len(transcript)} → {len(full_text)} chars")
+                    else:
+                        full_text = transcript
+                        logger.warning("BERT filtering failed, using original text")
+                except Exception as e:
+                    logger.warning(f"BERT filtering error: {e}, using original text")
+                    full_text = transcript
+            else:
+                full_text = transcript
+        elif audio and audio.filename:
+            # 음성 파일 입력
+            logger.info("📝 Step 1: Transcribing audio...")
+            transcribe_result = await transcribe_audio(audio)
+            if not transcribe_result.success:
+                return {
+                    "success": False,
+                    "step": "transcription",
+                    "error": transcribe_result.error
+                }
+            
+            # 음성 전사 결과에 BERT 필터링 적용
+            raw_text = transcribe_result.transcription["full_text"]
+            if TRIPLET_AVAILABLE:
+                try:
+                    triplet_processor = get_triplet_processor()
+                    enhanced_result = triplet_processor.process_whisperx_result(
+                        whisperx_result=transcribe_result.transcription,
+                        enable_bert_filtering=True,
+                        save_noise_log=False
+                    )
+                    
+                    if enhanced_result["success"]:
+                        full_text = enhanced_result["filtered_transcript"]
+                        logger.info(f"✅ BERT filtering applied to audio: {len(raw_text)} → {len(full_text)} chars")
+                    else:
+                        full_text = raw_text
+                        logger.warning("BERT filtering failed on audio, using original transcription")
+                except Exception as e:
+                    logger.warning(f"BERT filtering error on audio: {e}, using original transcription")
+                    full_text = raw_text
+            else:
+                full_text = raw_text
+        else:
             return {
                 "success": False,
-                "step": "transcription",
-                "error": transcribe_result.error
+                "step": "input",
+                "error": "Either transcript or audio file is required"
             }
         
         # 2단계: 2단계 분석
         logger.info("🧠 Step 2: Running 2-stage analysis...")
         analysis_request = TwoStageAnalysisRequest(
-            transcript=transcribe_result.transcription["full_text"],
+            transcript=full_text,
             generate_notion=generate_notion,
             generate_tasks=generate_tasks,
             num_tasks=num_tasks
