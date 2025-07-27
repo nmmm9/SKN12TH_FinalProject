@@ -1,5 +1,5 @@
 """
-TtalKkac 최종 AI 서버 - Triplet + BERT 통합
+TtalKkak 최종 AI 서버 - Triplet + BERT 통합
 회의록 → Triplet 필터링 → 기획안 → Task Master PRD → 업무생성
 """
 
@@ -494,7 +494,7 @@ def generate_chunked_response(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """앱 시작/종료 시 모델 로딩/정리"""
-    logger.info("🚀 Starting TtalKkac Final AI Server with Triplets...")
+    logger.info("🚀 Starting TtalKkak Final AI Server with Triplets...")
     
     # 모델들을 미리 로딩 (기본 활성화로 변경)
     preload_enabled = os.getenv("PRELOAD_MODELS", "true").lower() == "true"
@@ -573,11 +573,11 @@ async def lifespan(app: FastAPI):
     
     yield
     
-    logger.info("🛑 Shutting down TtalKkac Final AI Server...")
+    logger.info("🛑 Shutting down TtalKkak Final AI Server...")
 
 # FastAPI 앱 생성
 app = FastAPI(
-    title="TtalKkac Final AI Server with Triplets",
+    title="TtalKkak Final AI Server with Triplets",
     description="WhisperX + Triplet + BERT + Qwen3-32B + 2-Stage PRD Process",
     version="3.1.0",
     lifespan=lifespan
@@ -596,7 +596,7 @@ app.add_middleware(
 async def root():
     """루트 엔드포인트"""
     return {
-        "message": "TtalKkac Final AI Server with Triplets",
+        "message": "TtalKkak Final AI Server with Triplets",
         "version": "3.1.0",
         "features": [
             "WhisperX Speech-to-Text",

@@ -1,5 +1,5 @@
 """
-TtalKkac BERT 분류 모델
+TtalKkak BERT 분류 모델
 WhisperX Triplet 데이터를 중요도별로 분류하는 BERT 기반 필터링 시스템
 """
 
@@ -12,7 +12,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class TtalkkacBERTClassifier:
+class TtalkkakBERTClassifier:
     """
     회의 발화 중요도 분류를 위한 BERT 모델
     - Label 0: 중요한 업무 관련 발화 (유지)
@@ -36,7 +36,7 @@ class TtalkkacBERTClassifier:
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
             
             # 모델 로드 (파인튜닝된 모델이 있다면 해당 경로 사용)
-            local_model_path = "../Bert모델/Ttalkkac_model_v2"
+            local_model_path = "./Bert모델/Ttalkkak_model_v2"
             if os.path.exists(local_model_path):
                 logger.info("🎯 로컬 파인튜닝 모델 사용")
                 from transformers import AutoConfig
@@ -48,7 +48,7 @@ class TtalkkacBERTClassifier:
                 self.model = AutoModelForSequenceClassification.from_config(config)
                 
                 # .pt 파일 로드 (사용자가 업로드할 예정)
-                pt_file_path = os.path.join(local_model_path, "Ttalkkac_model_v2.pt")
+                pt_file_path = os.path.join(local_model_path, "Ttalkkak_model_v2.pt")
                 if os.path.exists(pt_file_path):
                     state_dict = torch.load(pt_file_path, map_location=self.device)
                     self.model.load_state_dict(state_dict)
@@ -324,12 +324,12 @@ class TtalkkacBERTClassifier:
 # 전역 인스턴스
 bert_classifier = None
 
-def get_bert_classifier() -> TtalkkacBERTClassifier:
+def get_bert_classifier() -> TtalkkakBERTClassifier:
     """BERT 분류기 싱글톤 인스턴스 반환"""
     global bert_classifier
     
     if bert_classifier is None:
-        bert_classifier = TtalkkacBERTClassifier()
+        bert_classifier = TtalkkakBERTClassifier()
         bert_classifier.load_model()
     
     return bert_classifier

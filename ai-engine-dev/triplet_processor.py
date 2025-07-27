@@ -1,5 +1,5 @@
 """
-TtalKkac Triplet 프로세서
+TtalKkak Triplet 프로세서
 WhisperX 결과를 Triplet 구조로 변환하고 BERT 분류를 수행하는 통합 모듈
 """
 

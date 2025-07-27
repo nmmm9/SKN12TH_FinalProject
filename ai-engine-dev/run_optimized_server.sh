@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# TtalKkac AI 서버 VLLM + 최적화 실행 스크립트
+# TtalKkak AI 서버 VLLM + 최적화 실행 스크립트
 
-echo "🚀 TtalKkac AI 서버 VLLM + 최적화 버전 시작..."
+echo "🚀 TtalKkak AI 서버 VLLM + 최적화 버전 시작..."
 
 # 환경변수 설정
 export PRELOAD_MODELS=true
