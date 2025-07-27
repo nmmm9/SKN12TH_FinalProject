@@ -5,6 +5,7 @@ accelerate>=0.24.0
 bitsandbytes>=0.41.0
 autoawq>=0.1.8
 whisperx
+vllm>=0.3.0  # Ultra-fast LLM inference engine
 
 # 웹 서버
 fastapi>=0.104.0

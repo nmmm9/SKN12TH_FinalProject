@@ -167,32 +167,69 @@ def load_whisperx():
     return whisper_model
 
 def load_qwen3():
-    """Qwen3-32B-AWQ 모델 로딩"""
+    """Qwen3-32B-AWQ 모델 로딩 (VLLM 최적화)"""
     global qwen_model, qwen_tokenizer
     
     if qwen_model is None or qwen_tokenizer is None:
-        logger.info("🧠 Loading Qwen3-32B-AWQ...")
+        logger.info("🚀 Loading Qwen3-32B-AWQ with VLLM...")
         try:
-            from transformers import AutoTokenizer, AutoModelForCausalLM
+            # VLLM 사용 여부 체크
+            use_vllm = os.getenv("USE_VLLM", "true").lower() == "true"
             
-            model_name = "Qwen/Qwen3-32B-AWQ"
-            
-            qwen_tokenizer = AutoTokenizer.from_pretrained(
-                model_name,
-                trust_remote_code=True
-            )
-            
-            qwen_model = AutoModelForCausalLM.from_pretrained(
-                model_name,
-                device_map="auto",
-                torch_dtype=torch.float16,
-                trust_remote_code=True
-            )
-            
-            logger.info("✅ Qwen3-32B-AWQ loaded successfully")
+            if use_vllm:
+                logger.info("⚡ Using VLLM for ultra-fast inference")
+                from vllm import LLM
+                from transformers import AutoTokenizer
+                
+                model_name = "Qwen/Qwen3-32B-AWQ"
+                
+                # VLLM 모델 로딩
+                qwen_model = LLM(
+                    model=model_name,
+                    tensor_parallel_size=1,  # GPU 개수에 맞게 자동 조정
+                    gpu_memory_utilization=0.9,  # GPU 메모리 90% 사용
+                    trust_remote_code=True,
+                    quantization="awq",  # AWQ 양자화 명시
+                    max_model_len=32768,  # 최대 토큰 길이
+                    enforce_eager=False,  # CUDA 그래프 최적화
+                    swap_space=2,  # 2GB swap space
+                    disable_log_requests=True  # 요청 로그 비활성화 (성능향상)
+                )
+                
+                # 토크나이저는 별도 로딩 (템플릿 적용용)
+                qwen_tokenizer = AutoTokenizer.from_pretrained(
+                    model_name, trust_remote_code=True
+                )
+                
+                logger.info("🎉 VLLM Qwen3-32B-AWQ loaded successfully")
+                
+            else:
+                # 기존 Transformers 방식 (백업용)
+                logger.info("📚 Using Transformers (fallback mode)")
+                from transformers import AutoTokenizer, AutoModelForCausalLM
+                
+                model_name = "Qwen/Qwen3-32B-AWQ"
+                
+                qwen_tokenizer = AutoTokenizer.from_pretrained(
+                    model_name, trust_remote_code=True
+                )
+                
+                qwen_model = AutoModelForCausalLM.from_pretrained(
+                    model_name,
+                    device_map="auto",
+                    torch_dtype=torch.float16,
+                    trust_remote_code=True
+                )
+                
+                logger.info("✅ Transformers Qwen3-32B-AWQ loaded successfully")
             
         except Exception as e:
             logger.error(f"❌ Qwen3-32B-AWQ loading failed: {e}")
+            # VLLM 실패 시 Transformers로 대체
+            if 'vllm' in str(e).lower():
+                logger.warning("🔄 VLLM failed, falling back to Transformers...")
+                os.environ["USE_VLLM"] = "false"
+                return load_qwen3()  # 재귀 호출로 Transformers 로딩
             raise e
     
     return qwen_model, qwen_tokenizer
@@ -257,32 +294,73 @@ You must respond with a JSON object following this exact structure:
     # 메시지 구성
     messages = [{"role": "user", "content": schema_prompt}]
     
-    # 토큰화
-    text = qwen_tokenizer.apply_chat_template(
-        messages, 
-        tokenize=False, 
-        add_generation_prompt=True
-    )
+    # 추론 실행 (VLLM vs Transformers)
+    use_vllm = os.getenv("USE_VLLM", "true").lower() == "true"
     
-    inputs = qwen_tokenizer([text], return_tensors="pt").to(qwen_model.device)
-    
-    # 추론 실행
-    with torch.no_grad():
-        outputs = qwen_model.generate(
-            **inputs,
-            max_new_tokens=2048,
+    if use_vllm and hasattr(qwen_model, 'generate'):
+        # VLLM 추론 (초고속!)
+        logger.info("⚡ VLLM 추론 실행...")
+        start_time = time.time()
+        
+        from vllm import SamplingParams
+        
+        # 샘플링 파라미터 설정
+        sampling_params = SamplingParams(
+            max_tokens=2048,
             temperature=temperature,
-            do_sample=True,
-            pad_token_id=qwen_tokenizer.eos_token_id,
+            top_p=0.9,
             repetition_penalty=1.1,
-            top_p=0.9
+            stop=None
         )
-    
-    # 결과 디코딩
-    response = qwen_tokenizer.decode(
-        outputs[0][len(inputs["input_ids"][0]):], 
-        skip_special_tokens=True
-    )
+        
+        # 메시지를 텍스트로 변환
+        text = qwen_tokenizer.apply_chat_template(
+            messages, 
+            tokenize=False, 
+            add_generation_prompt=True
+        )
+        
+        # VLLM 추론 실행
+        outputs = qwen_model.generate([text], sampling_params)
+        response = outputs[0].outputs[0].text
+        
+        inference_time = time.time() - start_time
+        logger.info(f"🎉 VLLM 추론 완료: {inference_time:.3f}초")
+        
+    else:
+        # Transformers 추론 (기존 방식)
+        logger.info("📚 Transformers 추론 실행...")
+        start_time = time.time()
+        
+        # 토큰화
+        text = qwen_tokenizer.apply_chat_template(
+            messages, 
+            tokenize=False, 
+            add_generation_prompt=True
+        )
+        
+        inputs = qwen_tokenizer([text], return_tensors="pt").to(qwen_model.device)
+        
+        # 추론 실행
+        with torch.no_grad():
+            outputs = qwen_model.generate(
+                **inputs,
+                max_new_tokens=2048,
+                temperature=temperature,
+                do_sample=True,
+                pad_token_id=qwen_tokenizer.eos_token_id,
+                repetition_penalty=1.1,
+                top_p=0.9
+            )
+        
+        # 결과 디코딩
+        response = qwen_tokenizer.decode(
+            outputs[0][len(inputs["input_ids"][0]):], 
+            skip_special_tokens=True
+        )
+        
+        inference_time = time.time() - start_time
+        logger.info(f"✅ Transformers 추론 완료: {inference_time:.3f}초")
     
     # JSON 추출 및 파싱
     try:
@@ -402,17 +480,80 @@ async def lifespan(app: FastAPI):
     """앱 시작/종료 시 모델 로딩/정리"""
     logger.info("🚀 Starting TtalKkac Final AI Server with Triplets...")
     
-    # 모델들을 미리 로딩 (선택사항)
-    try:
-        if os.getenv("PRELOAD_MODELS", "false").lower() == "true":
-            logger.info("📦 Preloading models...")
-            load_whisperx()
-            load_qwen3()
-            if TRIPLET_AVAILABLE:
-                get_bert_classifier()
-            logger.info("✅ Models preloaded successfully")
-    except Exception as e:
-        logger.warning(f"⚠️ Model preloading failed: {e}")
+    # 모델들을 미리 로딩 (기본 활성화로 변경)
+    preload_enabled = os.getenv("PRELOAD_MODELS", "true").lower() == "true"
+    logger.info(f"🔧 Model preloading: {'Enabled' if preload_enabled else 'Disabled'}")
+    
+    if preload_enabled:
+        try:
+            logger.info("📦 Starting parallel model preloading...")
+            import asyncio
+            
+            # 병렬 로딩을 위한 비동기 래퍼 함수들 (시간 측정 포함)
+            async def load_whisperx_async():
+                start_time = time.time()
+                logger.info("🎤 Loading WhisperX...")
+                load_whisperx()
+                elapsed = time.time() - start_time
+                logger.info(f"✅ WhisperX loaded in {elapsed:.2f} seconds")
+                return elapsed
+            
+            async def load_qwen3_async():
+                start_time = time.time()
+                logger.info("🧠 Loading Qwen3-32B-AWQ...")
+                load_qwen3()
+                elapsed = time.time() - start_time
+                logger.info(f"✅ Qwen3-32B-AWQ loaded in {elapsed:.2f} seconds")
+                return elapsed
+            
+            async def load_bert_async():
+                if TRIPLET_AVAILABLE:
+                    start_time = time.time()
+                    logger.info("🔍 Loading BERT classifier...")
+                    get_bert_classifier()
+                    elapsed = time.time() - start_time
+                    logger.info(f"✅ BERT classifier loaded in {elapsed:.2f} seconds")
+                    return elapsed
+                return 0
+            
+            # 병렬 로딩 실행 (총 시간 측정)
+            total_start_time = time.time()
+            
+            results = await asyncio.gather(
+                load_whisperx_async(),
+                load_qwen3_async(), 
+                load_bert_async(),
+                return_exceptions=True
+            )
+            
+            total_elapsed = time.time() - total_start_time
+            
+            # 결과 정리
+            whisperx_time, qwen3_time, bert_time = results
+            if isinstance(whisperx_time, Exception):
+                whisperx_time = 0
+                logger.error(f"❌ WhisperX loading failed: {whisperx_time}")
+            if isinstance(qwen3_time, Exception):
+                qwen3_time = 0
+                logger.error(f"❌ Qwen3 loading failed: {qwen3_time}")
+            if isinstance(bert_time, Exception):
+                bert_time = 0
+                logger.error(f"❌ BERT loading failed: {bert_time}")
+            
+            logger.info("🎉 All models preloaded successfully!")
+            logger.info("⏱️  Loading Time Summary:")
+            logger.info(f"   - WhisperX: {whisperx_time:.2f}s")
+            logger.info(f"   - Qwen3-32B: {qwen3_time:.2f}s") 
+            logger.info(f"   - BERT: {bert_time:.2f}s")
+            logger.info(f"   - Total (parallel): {total_elapsed:.2f}s")
+            logger.info(f"   - Sequential would take: {whisperx_time + qwen3_time + bert_time:.2f}s")
+            logger.info(f"   - Time saved: {(whisperx_time + qwen3_time + bert_time) - total_elapsed:.2f}s")
+            
+        except Exception as e:
+            logger.error(f"❌ Model preloading failed: {e}")
+            logger.info("⚠️ Server will continue with lazy loading")
+    else:
+        logger.info("📝 Using lazy loading (models load on first request)")
     
     yield
     

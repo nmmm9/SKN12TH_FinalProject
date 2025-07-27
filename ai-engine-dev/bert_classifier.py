@@ -122,9 +122,149 @@ class TtalkkacBERTClassifier:
             # 기본값: 중요한 발화로 분류 (안전장치)
             return {"label": 0, "confidence": 0.5, "text_length": 0}
     
-    def classify_triplets_batch(self, triplets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Triplet 배치 분류"""
-        logger.info(f"🔍 BERT 분류 시작: {len(triplets)}개 Triplet")
+    def classify_triplets_batch(self, triplets: List[Dict[str, Any]], batch_size: int = 32) -> List[Dict[str, Any]]:
+        """진짜 배치 처리 - GPU 효율적 추론"""
+        if not triplets:
+            return []
+        
+        import time
+        total_start_time = time.time()
+        logger.info(f"🚀 진짜 배치 BERT 분류 시작: {len(triplets)}개 Triplet (배치 크기: {batch_size})")
+        
+        # 모델 로딩 확인
+        if not self.model or not self.tokenizer:
+            self.load_model()
+        
+        classified_triplets = []
+        important_count = 0
+        noise_count = 0
+        
+        try:
+            # 1. 모든 텍스트 전처리
+            texts = []
+            for triplet in triplets:
+                prev_text = triplet.get("prev", "")
+                target_text = triplet.get("target", "")
+                next_text = triplet.get("next", "")
+                
+                # [TGT] 태그 제거 후 결합
+                target_clean = target_text.replace("[TGT]", "").replace("[/TGT]", "").strip()
+                combined_text = f"{prev_text} {target_clean} {next_text}".strip()
+                texts.append(combined_text)
+            
+            # 2. 배치별 처리
+            all_predictions = []
+            all_confidences = []
+            preprocessing_time = time.time() - total_start_time
+            
+            batch_start_time = time.time()
+            num_batches = (len(texts) + batch_size - 1) // batch_size
+            
+            for batch_idx, i in enumerate(range(0, len(texts), batch_size)):
+                batch_processing_start = time.time()
+                batch_end = min(i + batch_size, len(texts))
+                batch_texts = texts[i:batch_end]
+                
+                logger.info(f"📊 배치 {batch_idx+1}/{num_batches} 처리 중: {i+1}-{batch_end}/{len(texts)}")
+                
+                # 배치 토크나이징
+                inputs = self.tokenizer(
+                    batch_texts,
+                    return_tensors="pt",
+                    padding=True,
+                    truncation=True,
+                    max_length=512
+                )
+                
+                # GPU로 이동
+                inputs = {k: v.to(self.device) for k, v in inputs.items()}
+                
+                # 배치 추론 실행 (GPU 메모리 최적화)
+                with torch.no_grad():
+                    # Mixed Precision으로 메모리 절약
+                    if hasattr(torch.cuda, 'amp') and torch.cuda.is_available():
+                        with torch.cuda.amp.autocast():
+                            outputs = self.model(**inputs)
+                    else:
+                        outputs = self.model(**inputs)
+                    
+                    predictions = torch.argmax(outputs.logits, dim=-1)
+                    confidences = torch.softmax(outputs.logits, dim=-1)
+                
+                # GPU 메모리 정리
+                del inputs
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                
+                # 결과 수집
+                batch_predictions = predictions.cpu().numpy()
+                batch_confidences = confidences.cpu().numpy()
+                
+                all_predictions.extend(batch_predictions)
+                for j, conf_scores in enumerate(batch_confidences):
+                    label = batch_predictions[j]
+                    confidence = conf_scores[label]
+                    all_confidences.append(confidence)
+                
+                batch_elapsed = time.time() - batch_processing_start
+                logger.info(f"   ⏱️  배치 {batch_idx+1} 완료: {batch_elapsed:.3f}초 ({len(batch_texts)}개 처리)")
+            
+            # 3. 결과 통합
+            for i, triplet in enumerate(triplets):
+                try:
+                    triplet_with_label = triplet.copy()
+                    triplet_with_label["label"] = int(all_predictions[i])
+                    triplet_with_label["confidence"] = float(all_confidences[i])
+                    triplet_with_label["text_length"] = len(texts[i])
+                    
+                    classified_triplets.append(triplet_with_label)
+                    
+                    # 통계 수집
+                    if all_predictions[i] == 0:
+                        important_count += 1
+                    else:
+                        noise_count += 1
+                        
+                except Exception as e:
+                    logger.error(f"❌ Triplet {i} 결과 처리 실패: {e}")
+                    # 실패 시 기본값
+                    triplet["label"] = 0
+                    triplet["confidence"] = 0.5
+                    classified_triplets.append(triplet)
+                    important_count += 1
+            
+            # 4. 통계 출력
+            total = len(triplets)
+            noise_ratio = (noise_count / total) * 100 if total > 0 else 0
+            
+            total_elapsed = time.time() - total_start_time
+            batch_processing_time = time.time() - batch_start_time
+            
+            logger.info(f"🎉 진짜 배치 BERT 분류 완료!")
+            logger.info(f"📈 분류 통계:")
+            logger.info(f"   - 전체: {total}개")
+            logger.info(f"   - 배치 크기: {batch_size}")
+            logger.info(f"   - 총 배치 수: {num_batches}")
+            logger.info(f"   - 중요 발화: {important_count}개 ({100-noise_ratio:.1f}%)")
+            logger.info(f"   - 노이즈 발화: {noise_count}개 ({noise_ratio:.1f}%)")
+            logger.info(f"⏱️  성능 통계:")
+            logger.info(f"   - 전처리 시간: {preprocessing_time:.3f}초")
+            logger.info(f"   - 배치 처리 시간: {batch_processing_time:.3f}초")
+            logger.info(f"   - 총 처리 시간: {total_elapsed:.3f}초")
+            logger.info(f"   - 처리 속도: {total/total_elapsed:.1f} triplets/sec")
+            logger.info(f"   - 개별 처리 예상 시간: {total * 0.5:.1f}초 (가정)")
+            logger.info(f"   - 예상 시간 절약: {(total * 0.5) - total_elapsed:.1f}초")
+            
+            return classified_triplets
+            
+        except Exception as e:
+            logger.error(f"❌ 배치 분류 실패, 개별 처리로 대체: {e}")
+            # 실패 시 기존 개별 처리 방식으로 대체
+            return self._classify_triplets_individual_fallback(triplets)
+    
+    def _classify_triplets_individual_fallback(self, triplets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """배치 처리 실패 시 대체용 개별 처리"""
+        logger.warning("⚠️ 개별 처리 방식으로 대체")
         
         classified_triplets = []
         important_count = 0
@@ -132,39 +272,33 @@ class TtalkkacBERTClassifier:
         
         for i, triplet in enumerate(triplets):
             try:
-                # 분류 수행
                 classification = self.classify_triplet(triplet)
                 
-                # 결과 추가
                 triplet_with_label = triplet.copy()
                 triplet_with_label["label"] = classification["label"]
                 triplet_with_label["confidence"] = classification["confidence"]
                 
                 classified_triplets.append(triplet_with_label)
                 
-                # 통계 수집
                 if classification["label"] == 0:
                     important_count += 1
                 else:
                     noise_count += 1
                     
-                # 진행률 로그
-                if (i + 1) % 50 == 0 or (i + 1) == len(triplets):
-                    logger.info(f"📊 분류 진행률: {i+1}/{len(triplets)} ({((i+1)/len(triplets)*100):.1f}%)")
+                if (i + 1) % 20 == 0 or (i + 1) == len(triplets):
+                    logger.info(f"📊 개별 처리 진행률: {i+1}/{len(triplets)}")
                     
             except Exception as e:
                 logger.error(f"❌ Triplet {i} 분류 실패: {e}")
-                # 실패 시 기본값으로 중요한 발화로 분류
                 triplet["label"] = 0
                 triplet["confidence"] = 0.5
                 classified_triplets.append(triplet)
                 important_count += 1
         
-        # 분류 결과 통계
         total = len(triplets)
         noise_ratio = (noise_count / total) * 100 if total > 0 else 0
         
-        logger.info(f"✅ BERT 분류 완료")
+        logger.info(f"✅ 개별 BERT 분류 완료")
         logger.info(f"📈 분류 통계:")
         logger.info(f"   - 전체: {total}개")
         logger.info(f"   - 중요 발화: {important_count}개 ({100-noise_ratio:.1f}%)")
