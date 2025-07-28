@@ -13,36 +13,39 @@ const Sidebar = ({ setActiveMenu }: SidebarProps) => {
       id: 'home', 
       icon: Home, 
       label: '대시보드', 
-      path: '/',
+      path: '/dashboard',
       description: '전체 현황 보기'
     },
     { 
       id: 'meeting', 
       icon: MessageSquare, 
       label: '회의 분석', 
-      path: '/meeting',
+      path: '/dashboard/meeting',
       description: '회의록 및 인사이트'
     },
     { 
       id: 'task', 
       icon: FileText, 
       label: '업무 관리', 
-      path: '/task',
+      path: '/dashboard/task',
       description: '프로젝트 및 태스크'
     },
     { 
       id: 'settings', 
       icon: Settings, 
       label: '설정', 
-      path: '/settings',
+      path: '/dashboard/settings',
       description: '시스템 설정'
     },
   ];
 
   const getActiveMenu = () => {
     const currentPath = location.pathname;
-    const currentItem = menuItems.find(item => item.path === currentPath);
-    return currentItem?.id || 'home';
+    if (currentPath === '/dashboard') return 'home';
+    if (currentPath.startsWith('/dashboard/meeting')) return 'meeting';
+    if (currentPath.startsWith('/dashboard/task')) return 'task';
+    if (currentPath.startsWith('/dashboard/settings')) return 'settings';
+    return 'home';
   };
 
   return (

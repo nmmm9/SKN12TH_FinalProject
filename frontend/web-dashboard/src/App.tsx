@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import Layout from './components/Layout';
+import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import MeetingAnalysis from './pages/MeetingAnalysis';
 import TaskManagement from './pages/TaskManagement';
@@ -52,7 +53,11 @@ function App() {
       <Router>
         <div className="App min-h-screen bg-neutral-50 font-sans antialiased">
           <Routes>
-            <Route path="/" element={<Layout />}>
+            {/* 랜딩 페이지 */}
+            <Route path="/" element={<Landing />} />
+            
+            {/* 대시보드 및 관리 페이지들 */}
+            <Route path="/dashboard" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="meeting" element={<MeetingAnalysis />} />
               <Route path="task" element={<TaskManagement />} />
