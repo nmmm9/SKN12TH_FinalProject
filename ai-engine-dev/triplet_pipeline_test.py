@@ -210,6 +210,42 @@ def parse_whisperx_json(json_path: str) -> List[Dict]:
         
     return entries
 
+def parse_jsonl_file(jsonl_path: str) -> List[Dict]:
+    """JSONL 파일을 파싱하여 구조화된 데이터로 변환"""
+    entries = []
+    
+    with open(jsonl_path, 'r', encoding='utf-8') as f:
+        for line_num, line in enumerate(f, 1):
+            line = line.strip()
+            if not line:
+                continue
+                
+            try:
+                # JSON 라인 파싱
+                data = json.loads(line)
+                
+                # 필수 필드 추출
+                timestamp = data.get("timestamp", f"00:00:{line_num:02d}")
+                speaker = data.get("speaker", "UNKNOWN")
+                text = data.get("text", "").strip()
+                
+                if text:  # 빈 텍스트가 아닌 경우만 추가
+                    # 문장 단위로 분리
+                    sentences = split_sentences(text)
+                    for i, sent in enumerate(sentences, 1):
+                        entries.append({
+                            "timestamp": timestamp,
+                            "timestamp_order": f"{line_num}-{i}",
+                            "speaker": speaker,
+                            "text": sent
+                        })
+                        
+            except json.JSONDecodeError as e:
+                print(f"Warning: JSON 파싱 오류 (라인 {line_num}): {e}")
+                continue
+    
+    return entries
+
 def parse_text_input(text: str) -> List[Dict]:
     """일반 텍스트를 WhisperX 형태로 변환"""
     lines = [line.strip() for line in text.split('\n') if line.strip()]
@@ -365,6 +401,10 @@ def run_full_pipeline(input_data: str, input_type: str = "auto", output_dir: str
         # JSON 파일 처리
         parsed_data = parse_whisperx_json(input_data)
         print(f"   WhisperX JSON 파일 파싱 완료: {len(parsed_data)}개 항목")
+    elif input_type == "jsonl" or (input_type == "auto" and input_data.endswith('.jsonl')):
+        # JSONL 파일 처리
+        parsed_data = parse_jsonl_file(input_data)
+        print(f"   JSONL 파일 파싱 완료: {len(parsed_data)}개 항목")
     else:
         # 텍스트 처리
         if os.path.isfile(input_data):
@@ -461,8 +501,8 @@ def main():
     """메인 함수"""
     parser = argparse.ArgumentParser(description='TtalKkak Triplet 파이프라인 테스트')
     parser.add_argument('--input', '-i', type=str, help='입력 파일 경로 또는 텍스트')
-    parser.add_argument('--type', '-t', choices=['auto', 'json', 'text'], default='auto', 
-                       help='입력 타입 (auto: 자동감지, json: WhisperX JSON, text: 일반 텍스트)')
+    parser.add_argument('--type', '-t', choices=['auto', 'json', 'jsonl', 'text'], default='auto', 
+                       help='입력 타입 (auto: 자동감지, json: WhisperX JSON, jsonl: JSON Lines, text: 일반 텍스트)')
     parser.add_argument('--output', '-o', type=str, default='./triplet_test_output', 
                        help='출력 디렉토리')
     parser.add_argument('--sample', '-s', action='store_true', 
