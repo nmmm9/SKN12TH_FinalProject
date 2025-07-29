@@ -1312,8 +1312,14 @@ app.view('transcript_input_modal', async ({ ack, body, view, client }) => {
       ]
     });
     
-    // AI 처리 함수 호출
-    await processTranscriptWithAI(transcriptText, client, channelId);
+    // 즉시 응답 후 백그라운드 처리
+    setImmediate(async () => {
+      try {
+        await processTranscriptWithAI(transcriptText, client, channelId);
+      } catch (error) {
+        console.error('❌ 백그라운드 처리 오류:', error);
+      }
+    });
     
   } catch (error) {
     console.error('❌ 모달 처리 오류:', error);

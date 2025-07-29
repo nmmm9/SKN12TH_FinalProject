@@ -14,7 +14,7 @@ import time
 
 import torch
 import numpy as np
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Body, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -1238,13 +1238,16 @@ async def enhanced_two_stage_pipeline(
             error=str(e)
         )
 
+
 @app.post("/pipeline-final", response_model=Dict[str, Any])
 async def final_pipeline(
-    audio: UploadFile = File(None),
-    transcript: str = None,
-    generate_notion: bool = True,
-    generate_tasks: bool = True,
-    num_tasks: int = 5
+    request: Request,
+    audio: UploadFile = File(None),  
+    transcript: str = Form(None),
+    generate_notion: bool = Form(True),
+    generate_tasks: bool = Form(True),
+    num_tasks: int = Form(5),
+    apply_bert_filtering: bool = Form(False)  # 텍스트 입력시 BERT 필터링 여부
 ):
     """🚀 최종 전체 파이프라인: 음성/텍스트 자동 감지 → VLLM 초고속 분석"""
     try:
@@ -1252,36 +1255,22 @@ async def final_pipeline(
         
         start_time = time.time()
         
-        # 입력 타입 자동 감지 및 BERT 필터링
+        # JSON 요청 처리
+        if request.headers.get("content-type") == "application/json":
+            body = await request.json()
+            transcript = body.get('transcript')
+            generate_notion = body.get('generate_notion', True)
+            generate_tasks = body.get('generate_tasks', True)
+            num_tasks = body.get('num_tasks', 5)
+            apply_bert_filtering = body.get('apply_bert_filtering', False)
+            logger.info("📝 JSON request detected")
+        else:
+            logger.info("📝 Form request detected")
+        
         if transcript:
-            # 텍스트 입력 + BERT 필터링
-            logger.info("📝 Text input detected, applying BERT filtering...")
-            if TRIPLET_AVAILABLE:
-                try:
-                    triplet_processor = get_triplet_processor()
-                    mock_whisperx_result = {
-                        "segments": [{"text": transcript, "start": 0, "end": 60}],
-                        "full_text": transcript,
-                        "language": "ko"
-                    }
-                    
-                    enhanced_result = triplet_processor.process_whisperx_result(
-                        whisperx_result=mock_whisperx_result,
-                        enable_bert_filtering=True,
-                        save_noise_log=False
-                    )
-                    
-                    if enhanced_result["success"]:
-                        full_text = enhanced_result["filtered_transcript"]
-                        logger.info(f"✅ BERT filtering applied: {len(transcript)} → {len(full_text)} chars")
-                    else:
-                        full_text = transcript
-                        logger.warning("BERT filtering failed, using original text")
-                except Exception as e:
-                    logger.warning(f"BERT filtering error: {e}, using original text")
-                    full_text = transcript
-            else:
-                full_text = transcript
+            # 텍스트 입력 - 이미 정리된 회의록이므로 BERT 필터링 생략
+            logger.info("📝 Text input detected (clean transcript, skipping BERT filtering)")
+            full_text = transcript
         elif audio and audio.filename:
             # 음성 파일 입력
             logger.info("📝 Step 1: Transcribing audio...")
@@ -1334,10 +1323,22 @@ async def final_pipeline(
         
         total_time = time.time() - start_time
         
+        # 텍스트 입력과 음성 입력에 따라 transcription 정보 다르게 처리
+        if transcript:
+            # 텍스트 입력의 경우 가짜 transcription 정보 생성
+            transcription_info = {
+                "full_text": full_text,
+                "segments": [{"text": full_text, "start": 0, "end": 60}],
+                "language": "ko"
+            }
+        else:
+            # 음성 입력의 경우 실제 transcription 정보 사용
+            transcription_info = transcribe_result.transcription
+
         return {
             "success": True,
             "step": "completed",
-            "transcription": transcribe_result.transcription,
+            "transcription": transcription_info,
             "analysis": {
                 "notion_project": analysis_result.stage1_notion,
                 "task_master_prd": analysis_result.stage2_prd,
