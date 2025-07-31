@@ -1,13 +1,14 @@
 const { App, ExpressReceiver } = require('@slack/bolt');
 
 // AI 서비스 초기화
-let aiService;
+let aiService = null;
 try {
   const { AIService } = require('./services/ai-service');
   aiService = new AIService();
   console.log('✅ AI 서비스 초기화 완료');
 } catch (error) {
   console.error('❌ AI 서비스 초기화 실패:', error);
+  console.log('⚠️ AI 서비스 없이 계속 진행합니다 (기본 응답 모드)');
 }
 
 // 환경 변수 디버깅

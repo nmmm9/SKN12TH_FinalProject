@@ -332,7 +332,7 @@ def preprocess_triplets(triplets_with_labels: List[Dict], log_file_path: str = N
                 "timestamp": triplet.get("timestamp", ""),
                 "timestamp_order": triplet["timestamp_order"],
                 "speaker": triplet["speaker"],
-                "text": triplet["target"]
+                "text": triplet["target"].replace("[TGT] ", "").replace(" [/TGT]", "")
             }
             label_0_items.append(item)
             
@@ -342,7 +342,7 @@ def preprocess_triplets(triplets_with_labels: List[Dict], log_file_path: str = N
                 "timestamp": triplet.get("timestamp", ""),
                 "timestamp_order": triplet["timestamp_order"],
                 "speaker": triplet["speaker"],
-                "text": triplet["target"],
+                "text": triplet["target"].replace("[TGT] ", "").replace(" [/TGT]", ""),
                 "label": triplet["label"]
             }
             label_1_items.append(item)
