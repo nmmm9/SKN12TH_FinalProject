@@ -104,10 +104,24 @@ JSON 형식으로 프로젝트 기획안을 생성해주세요."""
         for item in gold_data:
             try:
                 # 원본 회의 내용 로드
-                source_folder = item.get('metadata', {}).get('source_file', '').replace('train_', '').replace('val_', '').replace('result_', '')
-                if not source_folder:
-                    logger.warning(f"source_folder 없음: {item}")
+                metadata = item.get('metadata', {})
+                source_file = metadata.get('source_file', '')
+                
+                # 디버깅: 메타데이터 출력
+                logger.info(f"메타데이터 확인: {metadata}")
+                
+                if not source_file:
+                    logger.warning(f"source_file 없음: {item.get('id', 'Unknown')}")
                     continue
+                
+                # source_file에서 실제 폴더명 추출
+                # train_XXX_result_폴더명 → 폴더명
+                if 'result_' in source_file:
+                    source_folder = source_file.split('result_', 1)[1]
+                else:
+                    source_folder = source_file.replace('train_', '').replace('val_', '')
+                
+                logger.info(f"추출된 폴더명: {source_folder}")
                 
                 meeting_content = self.load_meeting_content(source_dir, source_folder)
                 if not meeting_content:
