@@ -106,4 +106,8 @@ def batch_process_triplets():
 if __name__ == "__main__":
     print("TtalKkac Triplet 파이프라인 배치 처리 시작")
     print("=" * 80)
+<<<<<<< HEAD
     batch_process_triplets()
+=======
+    batch_process_triplets()
+>>>>>>> 4c570143e60db44c435dbe3343cd1bb8a97532f9
