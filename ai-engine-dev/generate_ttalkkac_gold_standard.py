@@ -570,7 +570,7 @@ if __name__ == "__main__":
     API_KEY = os.getenv("OPENAI_API_KEY")
     if not API_KEY:
         # 직접 API 키 설정 (임시)
-        API_KEY = "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"
+        API_KEY = ""
         print("API key set directly in code")
     
     if not API_KEY:
