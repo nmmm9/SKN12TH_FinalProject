@@ -5,7 +5,7 @@
 ## 📋 준비사항
 
 ### 시스템 요구사항
-- **GPU**: NVIDIA GPU 16GB+ VRAM 권장 (RTX 4090, A100 등)
+- **GPU**: NVIDIA GPU 24GB+ VRAM 권장 (RTX 4090, A100, H100 등)
 - **CPU**: 8 코어 이상
 - **RAM**: 32GB 이상
 - **Storage**: 50GB 이상 여유 공간
@@ -134,7 +134,7 @@ result = inferencer.generate_project_plan(meeting_content)
 
 1. **데이터 품질**: 7점 이상 고품질 데이터만 사용
 2. **토큰 길이**: 최대 2048 토큰으로 제한
-3. **모델 크기**: Qwen2.5-7B 기준 16GB+ VRAM 필요
+3. **모델 크기**: Qwen2.5-14B-AWQ 기준 24GB+ VRAM 필요
 4. **저장 공간**: 모델 + 어댑터 + 로그 = 약 20GB
 
 ## 🔧 트러블슈팅

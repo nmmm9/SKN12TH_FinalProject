@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class TtalkkacQwenInference:
-    def __init__(self, base_model_name: str = "Qwen/Qwen2.5-7B-Instruct", lora_path: str = None):
+    def __init__(self, base_model_name: str = "Qwen/Qwen2.5-14B-Instruct-AWQ", lora_path: str = None):
         self.base_model_name = base_model_name
         self.lora_path = lora_path
         self.tokenizer = None
@@ -47,12 +47,14 @@ JSON 형식으로 프로젝트 기획안을 생성해주세요."""
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         
-        # 베이스 모델 로드
+        # AWQ 베이스 모델 로드
         self.model = AutoModelForCausalLM.from_pretrained(
             self.base_model_name,
             torch_dtype=torch.float16,
             device_map="auto",
             trust_remote_code=True,
+            use_cache=True,
+            low_cpu_mem_usage=True
         )
         
         # LoRA 어댑터 로드 (파인튜닝된 경우)

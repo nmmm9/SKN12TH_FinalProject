@@ -260,7 +260,7 @@ def generate_structured_response(
 ) -> Dict[str, Any]:
     """구조화된 응답 생성 (청킹 지원)"""
     
-    # 청킹 필요 여부 확인
+    # 청킹 필요 여부 확인       
     if enable_chunking:
         try:
             from chunking_processor import get_chunking_processor
@@ -755,8 +755,8 @@ async def generate_notion_project(request: AnalysisRequest):
         logger.info("📝 Stage 1: Generating Notion project document...")
         
         # 프롬프트 생성
-        system_prompt = "당신은 회의록을 분석하여 체계적인 프로젝트 기획안을 작성하는 전문가입니다."
-        user_prompt = generate_notion_project_prompt(request.transcript)
+        system_prompt = generate_meeting_analysis_system_prompt()
+        user_prompt = generate_meeting_analysis_user_prompt(request.transcript)
         
         # 구조화된 응답 생성
         result = generate_structured_response(

@@ -69,7 +69,11 @@ JSON 형식으로 프로젝트 기획안을 생성해주세요."""
 
     def load_meeting_content(self, source_dir: str, meeting_folder: str) -> str:
         """원본 회의 내용 로드 (batch_triplet_results에서)"""
-        meeting_path = Path(source_dir) / f"result_{meeting_folder}" / "05_final_result.json"
+        # result_ 접두사가 이미 있는지 확인
+        if meeting_folder.startswith("result_"):
+            meeting_path = Path(source_dir) / meeting_folder / "05_final_result.json"
+        else:
+            meeting_path = Path(source_dir) / f"result_{meeting_folder}" / "05_final_result.json"
         
         if not meeting_path.exists():
             logger.warning(f"회의록 파일 없음: {meeting_path}")
@@ -100,9 +104,9 @@ JSON 형식으로 프로젝트 기획안을 생성해주세요."""
         for item in gold_data:
             try:
                 # 원본 회의 내용 로드
-                source_folder = item.get('source_dir', '')
+                source_folder = item.get('metadata', {}).get('source_file', '').replace('train_', '').replace('val_', '').replace('result_', '')
                 if not source_folder:
-                    logger.warning(f"source_dir 없음: {item.get('id', 'Unknown')}")
+                    logger.warning(f"source_folder 없음: {item}")
                     continue
                 
                 meeting_content = self.load_meeting_content(source_dir, source_folder)
@@ -114,7 +118,12 @@ JSON 형식으로 프로젝트 기획안을 생성해주세요."""
                 user_message = self.user_prompt_template.format(meeting_content=meeting_content)
                 
                 # 골드 스탠다드 응답 (JSON 형식)
-                assistant_response = json.dumps(item['notion_output'], ensure_ascii=False, indent=2)
+                result_data = item.get('result', {})
+                if not result_data:
+                    logger.warning(f"결과 데이터 없음: {item}")
+                    continue
+                    
+                assistant_response = json.dumps(result_data, ensure_ascii=False, indent=2)
                 
                 # Qwen3 채팅 형식으로 구성
                 conversation = f"<|im_start|>system\n{self.system_prompt}<|im_end|>\n<|im_start|>user\n{user_message}<|im_end|>\n<|im_start|>assistant\n{assistant_response}<|im_end|>"
@@ -122,15 +131,15 @@ JSON 형식으로 프로젝트 기획안을 생성해주세요."""
                 training_data.append({
                     "text": conversation,
                     "metadata": {
-                        "id": item.get('id', ''),
+                        "id": item.get('metadata', {}).get('source_file', ''),
                         "source": source_folder,
-                        "quality_score": item.get('quality_metrics', {}).get('final_score', 0),
-                        "is_high_quality": item.get('quality_metrics', {}).get('is_high_quality', False),
-                        "dataset_type": item.get('metadata', {}).get('dataset_type', 'unknown')
+                        "quality_score": 8.0,  # 골드 스탠다드는 고품질로 간주
+                        "is_high_quality": True,
+                        "dataset_type": "train" if "train_" in str(item.get('metadata', {}).get('source_file', '')) else "val"
                     }
                 })
                 
-                logger.info(f"변환 완료: {item.get('id', 'Unknown')}")
+                logger.info(f"변환 완료: {source_folder}")
                 
             except Exception as e:
                 logger.error(f"변환 실패 {item.get('id', 'Unknown')}: {e}")
@@ -139,7 +148,7 @@ JSON 형식으로 프로젝트 기획안을 생성해주세요."""
         return training_data
 
 class QwenFineTuner:
-    def __init__(self, model_name: str = "Qwen/Qwen2.5-7B-Instruct"):
+    def __init__(self, model_name: str = "Qwen/Qwen3-14B-AWQ"):
         self.model_name = model_name
         self.tokenizer = None
         self.model = None
@@ -159,13 +168,16 @@ class QwenFineTuner:
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         
-        # 모델 로드
+        # AWQ 모델 로드
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             torch_dtype=torch.float16,
             device_map="auto",
             trust_remote_code=True,
-            attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager"
+            attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager",
+            # AWQ 모델 특화 설정
+            use_cache=False,
+            low_cpu_mem_usage=True
         )
         
         logger.info("모델과 토크나이저 로딩 완료")
@@ -333,7 +345,8 @@ def main():
         print("⚠️ CPU 모드로 실행됩니다.")
     
     # 파인튜너 초기화
-    finetuner = QwenFineTuner("Qwen/Qwen2.5-7B-Instruct")
+    finetuner = QwenFineTuner("Qwen/Qwen3-14B-AWQ")
+    finetuner.data_converter = converter
     
     # 모델과 토크나이저 설정
     finetuner.setup_model_and_tokenizer()
