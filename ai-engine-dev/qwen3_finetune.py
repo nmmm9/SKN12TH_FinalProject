@@ -115,13 +115,16 @@ JSON 형식으로 프로젝트 기획안을 생성해주세요."""
                     continue
                 
                 # source_file에서 실제 폴더명 추출
-                # train_XXX_result_폴더명 → 폴더명
+                # '../batch_triplet_results\\result_폴더명\\05_final_result.json' → '폴더명'
                 if 'result_' in source_file:
-                    source_folder = source_file.split('result_', 1)[1]
+                    # result_ 이후 부분을 추출하고 \\05_final_result.json 제거
+                    temp = source_file.split('result_', 1)[1]
+                    # 경로 구분자와 파일명 제거 (Windows/Linux 호환)
+                    source_folder = temp.replace('\\05_final_result.json', '').replace('/05_final_result.json', '')
                 else:
                     source_folder = source_file.replace('train_', '').replace('val_', '')
                 
-                logger.info(f"추출된 폴더명: {source_folder}")
+                logger.info(f"추출된 폴더명: '{source_folder}'")
                 
                 meeting_content = self.load_meeting_content(source_dir, source_folder)
                 if not meeting_content:
