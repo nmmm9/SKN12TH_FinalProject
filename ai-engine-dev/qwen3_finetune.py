@@ -165,7 +165,7 @@ JSON 형식으로 프로젝트 기획안을 생성해주세요."""
         return training_data
 
 class QwenFineTuner:
-    def __init__(self, model_name: str = "Qwen/Qwen3-14B-AWQ"):
+    def __init__(self, model_name: str = "Qwen/Qwen2.5-7B-Instruct"):
         self.model_name = model_name
         self.tokenizer = None
         self.model = None
@@ -362,7 +362,7 @@ def main():
         print("⚠️ CPU 모드로 실행됩니다.")
     
     # 파인튜너 초기화
-    finetuner = QwenFineTuner("Qwen/Qwen3-14B-AWQ")
+    finetuner = QwenFineTuner("Qwen/Qwen2.5-7B-Instruct")
     finetuner.data_converter = converter
     
     # 모델과 토크나이저 설정
