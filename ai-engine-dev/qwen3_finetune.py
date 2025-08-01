@@ -185,17 +185,32 @@ class QwenFineTuner:
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         
-        # AWQ 모델 로드
-        self.model = AutoModelForCausalLM.from_pretrained(
-            self.model_name,
-            torch_dtype=torch.float16,
-            device_map="auto",
-            trust_remote_code=True,
-            attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager",
-            # AWQ 모델 특화 설정
-            use_cache=False,
-            low_cpu_mem_usage=True
-        )
+        # AWQ 모델 로드 (Flash Attention 강제 비활성화)
+        try:
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.model_name,
+                torch_dtype=torch.float16,
+                device_map="auto",
+                trust_remote_code=True,
+                attn_implementation="eager",  # Flash Attention 비활성화
+                # AWQ 모델 특화 설정
+                use_cache=False,
+                low_cpu_mem_usage=True
+            )
+        except Exception as e:
+            logger.error(f"AWQ 모델 로드 실패: {e}")
+            logger.info("일반 모델로 재시도...")
+            # AWQ 모델 실패 시 일반 모델로 대체
+            self.model_name = "Qwen/Qwen2.5-7B-Instruct"
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.model_name,
+                torch_dtype=torch.float16,
+                device_map="auto",
+                trust_remote_code=True,
+                attn_implementation="eager",
+                use_cache=False,
+                low_cpu_mem_usage=True
+            )
         
         logger.info("모델과 토크나이저 로딩 완료")
     
@@ -361,8 +376,8 @@ def main():
     else:
         print("⚠️ CPU 모드로 실행됩니다.")
     
-    # 파인튜너 초기화
-    finetuner = QwenFineTuner("Qwen/Qwen2.5-7B-Instruct")
+    # 파인튜너 초기화 (AWQ 모델 우선 시도)
+    finetuner = QwenFineTuner("Qwen/Qwen3-14B-AWQ")
     finetuner.data_converter = converter
     
     # 모델과 토크나이저 설정
