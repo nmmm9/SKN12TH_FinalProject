@@ -16,8 +16,10 @@ import random
 # 실제 프로젝트 모듈 임포트
 from meeting_analysis_prompts import (
     generate_meeting_analysis_system_prompt,
-    generate_meeting_analysis_user_prompt,
-    MEETING_ANALYSIS_SCHEMA
+    generate_meeting_analysis_user_prompt
+)
+from prd_generation_prompts import (
+    NOTION_PROJECT_SCHEMA
 )
 
 # 로깅 설정
@@ -40,7 +42,7 @@ class SingleModelTester:
         # 실제 프로젝트 프롬프트 사용
         self.system_prompt = generate_meeting_analysis_system_prompt()
         
-    def load_real_meeting_data(self, data_dir: str = "batch_triplet_results", num_samples: int = 5) -> List[Dict[str, Any]]:
+    def load_real_meeting_data(self, data_dir: str = "batch_triplet_results", num_samples: int = None) -> List[Dict[str, Any]]:
         """실제 회의록 데이터 로드"""
         logger.info(f"📁 Loading real meeting data from {data_dir}...")
         
@@ -58,8 +60,13 @@ class SingleModelTester:
             logger.error(f"❌ No result folders found in {data_dir}")
             return []
         
-        # 랜덤하게 샘플 선택
-        selected_folders = random.sample(result_folders, min(num_samples, len(result_folders)))
+        # 모든 데이터 또는 샘플 선택
+        if num_samples is None:
+            selected_folders = result_folders
+            logger.info(f"📊 Processing ALL {len(result_folders)} folders")
+        else:
+            selected_folders = random.sample(result_folders, min(num_samples, len(result_folders)))
+            logger.info(f"📊 Processing {len(selected_folders)} random samples")
         
         for folder in selected_folders:
             final_result_file = folder / "05_final_result.json"
@@ -75,7 +82,7 @@ class SingleModelTester:
                         timestamp = item.get('timestamp', 'Unknown')
                         speaker = item.get('speaker', 'Unknown')
                         text = item.get('text', '')
-                        meeting_text += f"[{timestamp}] {speaker}: {text}\\n"
+                        meeting_text += f"[{timestamp}] {speaker}: {text}\n"
                     
                     meeting_data.append({
                         "folder_name": folder.name,
@@ -175,7 +182,7 @@ class SingleModelTester:
 **Response Schema:**
 You must respond with a JSON object following this exact structure:
 ```json
-{json.dumps(MEETING_ANALYSIS_SCHEMA, indent=2, ensure_ascii=False)}
+{json.dumps(NOTION_PROJECT_SCHEMA, indent=2, ensure_ascii=False)}
 ```
 
 **Important Rules:**
@@ -293,7 +300,65 @@ You must respond with a JSON object following this exact structure:
             "generation_result": result
         }
     
-    def run_test(self, data_dir: str = "batch_triplet_results", num_samples: int = 3):
+    def save_test_results(self, test_results: List[Dict[str, Any]], backend: str):
+        """테스트 결과 저장"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        model_name_clean = self.model_name.replace("/", "_").replace("-", "_")
+        
+        # 결과 저장 폴더 생성
+        results_dir = Path("model_test_results")
+        results_dir.mkdir(exist_ok=True)
+        
+        # 전체 결과 저장
+        output_file = results_dir / f"test_results_{model_name_clean}_{backend}_{timestamp}.json"
+        
+        full_results = {
+            "test_info": {
+                "model_name": self.model_name,
+                "backend": backend,
+                "timestamp": timestamp,
+                "total_tests": len(test_results)
+            },
+            "results": test_results
+        }
+        
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(full_results, f, ensure_ascii=False, indent=2)
+        
+        logger.info(f"💾 Full results saved to: {output_file}")
+        
+        # 성공한 결과만 따로 저장 (보기 좋게)
+        successful_results = [r for r in test_results if r["generation_result"]["success"]]
+        if successful_results:
+            success_file = results_dir / f"successful_results_{model_name_clean}_{backend}_{timestamp}.json"
+            
+            formatted_results = []
+            for result in successful_results:
+                formatted_results.append({
+                    "folder_name": result["meeting_info"]["folder_name"],
+                    "segments": result["meeting_info"]["total_segments"],
+                    "chars": result["meeting_info"]["total_length"],
+                    "inference_time": result["generation_result"]["inference_time"],
+                    "generated_project": result["generation_result"]["result"]
+                })
+            
+            with open(success_file, 'w', encoding='utf-8') as f:
+                json.dump(formatted_results, f, ensure_ascii=False, indent=2)
+            
+            logger.info(f"✅ Success-only results saved to: {success_file}")
+        
+        # 요약 통계
+        successful_count = len(successful_results)
+        total_count = len(test_results)
+        success_rate = successful_count / total_count * 100 if total_count > 0 else 0
+        
+        if successful_results:
+            avg_time = sum(r["generation_result"]["inference_time"] for r in successful_results) / len(successful_results)
+            logger.info(f"📊 Summary: {successful_count}/{total_count} success ({success_rate:.1f}%), avg time: {avg_time:.2f}s")
+        else:
+            logger.info(f"📊 Summary: {successful_count}/{total_count} success ({success_rate:.1f}%)")
+    
+    def run_test(self, data_dir: str = "batch_triplet_results", num_samples: int = None, save_results: bool = True):
         """테스트 실행"""
         logger.info(f"🚀 Starting test with {self.model_name}...")
         
@@ -313,38 +378,38 @@ You must respond with a JSON object following this exact structure:
         test_results = []
         
         for i, meeting_data in enumerate(meeting_data_list):
-            logger.info(f"\\n{'='*60}")
-            logger.info(f"🧪 Test {i+1}/{len(meeting_data_list)}")
+            logger.info(f"\n{'='*60}")
+            logger.info(f"🧪 Test {i+1}/{len(meeting_data_list)} - {meeting_data['folder_name']}")
             
             result = self.test_single_meeting(meeting_data, backend)
             test_results.append(result)
             
-            # 결과 출력
+            # 간단한 상태만 출력 (전체 결과는 파일로 저장)
             if result["generation_result"]["success"]:
-                logger.info(f"✅ Generation successful ({result['generation_result']['inference_time']:.2f}s)")
-                logger.info("📋 Generated JSON:")
-                print(json.dumps(result["generation_result"]["result"], ensure_ascii=False, indent=2))
+                logger.info(f"✅ Success ({result['generation_result']['inference_time']:.2f}s)")
             else:
-                logger.error(f"❌ Generation failed: {result['generation_result']['error']}")
-                logger.info("🚨 Raw response:")
-                print(result["generation_result"]["raw_response"][:500] + "..." if len(result["generation_result"]["raw_response"]) > 500 else result["generation_result"]["raw_response"])
-            
-            print("\\n" + "="*60 + "\\n")
+                logger.error(f"❌ Failed: {result['generation_result']['error']}")
         
         # 최종 요약
         successful_tests = [r for r in test_results if r["generation_result"]["success"]]
-        logger.info(f"🎉 Test completed!")
+        logger.info(f"\n🎉 Test completed!")
         logger.info(f"📊 Success rate: {len(successful_tests)}/{len(test_results)} ({len(successful_tests)/len(test_results)*100:.1f}%)")
         
         if successful_tests:
             avg_time = sum(r["generation_result"]["inference_time"] for r in successful_tests) / len(successful_tests)
             logger.info(f"⏱️  Average inference time: {avg_time:.2f}s")
         
+        # 결과 저장
+        if save_results:
+            self.save_test_results(test_results, backend)
+        
         # 메모리 정리
         del self.current_model
         del self.current_tokenizer
         torch.cuda.empty_cache()
         logger.info("🧹 Memory cleaned up")
+        
+        return test_results
 
 
 def main():
@@ -355,11 +420,11 @@ def main():
     
     # 설정
     DATA_DIR = "batch_triplet_results"  # 실제 회의록 데이터 폴더
-    NUM_SAMPLES = 3  # 테스트할 회의록 개수
+    NUM_SAMPLES = None  # None = 모든 데이터, 숫자 = 샘플 개수
     
     logger.info(f"🎯 Testing model: {MODEL_NAME}")
     logger.info(f"📁 Data directory: {DATA_DIR}")
-    logger.info(f"🔢 Number of samples: {NUM_SAMPLES}")
+    logger.info(f"🔢 Number of samples: {'ALL' if NUM_SAMPLES is None else NUM_SAMPLES}")
     
     # 테스트 실행
     tester = SingleModelTester(MODEL_NAME)
