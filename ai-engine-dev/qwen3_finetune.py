@@ -250,19 +250,27 @@ class QwenFineTuner:
         
         logger.info(f"전체 데이터: {len(training_data)}개, 고품질 데이터: {len(high_quality_data)}개")
         
-        # train/val 분할
-        train_data = [item for item in high_quality_data if item["metadata"]["dataset_type"] == "train"]
-        val_data = [item for item in high_quality_data if item["metadata"]["dataset_type"] == "val"]
+        # train/val 분할 (8:2 비율로 자동 분할)
+        import random
+        random.shuffle(high_quality_data)
+        split_idx = int(len(high_quality_data) * 0.8)
+        train_data = high_quality_data[:split_idx]
+        val_data = high_quality_data[split_idx:]
         
         logger.info(f"학습 데이터: {len(train_data)}개, 검증 데이터: {len(val_data)}개")
         
+        if len(train_data) == 0:
+            logger.error("학습 데이터가 없습니다!")
+            return None, None
+        
         # Dataset 객체 생성
         train_dataset = Dataset.from_list([{"text": item["text"]} for item in train_data])
-        val_dataset = Dataset.from_list([{"text": item["text"]} for item in val_data])
+        val_dataset = Dataset.from_list([{"text": item["text"]} for item in val_data]) if val_data else None
         
         # 토크나이징
         train_dataset = train_dataset.map(tokenize_function, batched=True, remove_columns=["text"])
-        val_dataset = val_dataset.map(tokenize_function, batched=True, remove_columns=["text"])
+        if val_dataset is not None:
+            val_dataset = val_dataset.map(tokenize_function, batched=True, remove_columns=["text"])
         
         return train_dataset, val_dataset
     
@@ -385,6 +393,10 @@ def main():
     
     # 데이터셋 준비
     train_dataset, val_dataset = finetuner.prepare_dataset(training_data, max_length=2048)
+    
+    if train_dataset is None:
+        print("❌ 학습 데이터셋 준비 실패")
+        return
     
     # 파인튜닝 실행
     output_dir = f"./qwen3_lora_ttalkkac_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
