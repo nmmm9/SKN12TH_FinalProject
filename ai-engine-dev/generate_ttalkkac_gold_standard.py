@@ -22,6 +22,40 @@ class TtalkkakGoldStandardGenerator:
         
         return target_files
     
+    def chunk_text(self, text: str, chunk_size: int = 5000, overlap: int = 512) -> List[str]:
+        """텍스트를 청킹하여 나누기"""
+        if len(text) <= chunk_size:
+            return [text]
+        
+        chunks = []
+        start = 0
+        
+        while start < len(text):
+            end = start + chunk_size
+            
+            if end >= len(text):
+                chunk = text[start:]
+            else:
+                chunk = text[start:end]
+                
+                # 마지막 완전한 문장에서 끊기 시도
+                last_period = chunk.rfind('.')
+                last_newline = chunk.rfind('\n')
+                break_point = max(last_period, last_newline)
+                
+                if break_point > start + chunk_size // 2:
+                    chunk = text[start:break_point + 1]
+                    end = break_point + 1
+            
+            chunks.append(chunk.strip())
+            
+            if end >= len(text):
+                break
+                
+            start = end - overlap
+        
+        return chunks
+
     def load_meeting_data(self, file_path: str) -> Dict[str, Any]:
         """회의 데이터를 로드하고 텍스트로 변환"""
         try:
@@ -36,13 +70,39 @@ class TtalkkakGoldStandardGenerator:
                 text = item.get('text', '')
                 meeting_text += f"[{timestamp}] {speaker}: {text}\n"
             
+            full_text = meeting_text.strip()
+            
+            # 텍스트 길이 체크 및 청킹
+            if len(full_text) > 5000:
+                print(f"      📏 긴 텍스트 감지 ({len(full_text)}자) - 청킹 처리 중...")
+                chunks = self.chunk_text(full_text, chunk_size=5000, overlap=512)
+                print(f"      ✂️ {len(chunks)}개 청크로 분할")
+                
+                # 첫 번째 청크를 메인으로 사용하고, 나머지는 메타데이터에 저장
+                transcript = chunks[0]
+                chunk_info = {
+                    "is_chunked": True,
+                    "total_chunks": len(chunks),
+                    "all_chunks": chunks,
+                    "original_length": len(full_text)
+                }
+            else:
+                transcript = full_text
+                chunk_info = {
+                    "is_chunked": False,
+                    "total_chunks": 1,
+                    "original_length": len(full_text)
+                }
+            
             return {
-                "transcript": meeting_text.strip(),
+                "transcript": transcript,
                 "metadata": {
                     "source_file": file_path,
                     "utterance_count": len(data),
-                    "transcript_length": len(meeting_text),
-                    "speakers": list(set(item.get('speaker', 'Unknown') for item in data))
+                    "transcript_length": len(transcript),
+                    "original_transcript_length": len(full_text),
+                    "speakers": list(set(item.get('speaker', 'Unknown') for item in data)),
+                    "chunking_info": chunk_info
                 }
             }
         except Exception as e:
@@ -219,97 +279,9 @@ class TtalkkakGoldStandardGenerator:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
-    def generate_prd_from_notion(self, refined_notion: Any) -> Dict[str, Any]:
-        """개선된 노션에서 PRD 생성"""
-        try:
-            # refined_notion이 문자열인 경우 처리
-            if isinstance(refined_notion, str):
-                print(f"      ⚠️ 노션 결과가 문자열입니다. JSON 파싱 시도...")
-                try:
-                    refined_notion = json.loads(refined_notion)
-                except:
-                    # JSON 파싱 실패시 기본 구조 사용
-                    refined_notion = {
-                        "project_name": "파싱된 프로젝트",
-                        "project_purpose": "회의 내용 기반 프로젝트",
-                        "core_idea": "핵심 아이디어",
-                        "execution_plan": "실행 계획",
-                        "core_objectives": ["목표1", "목표2"],
-                        "expected_effects": ["효과1", "효과2"]
-                    }
-            
-            prd_prompt = generate_task_master_prd_prompt(refined_notion)
-            
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "당신은 노션 프로젝트를 기반으로 Task Master PRD를 생성하는 전문가입니다."},
-                    {"role": "user", "content": prd_prompt}
-                ],
-                temperature=0.3,
-                max_tokens=4000
-            )
-            
-            result = response.choices[0].message.content
-            try:
-                parsed_result = json.loads(result)
-                return {"success": True, "result": parsed_result}
-            except json.JSONDecodeError:
-                return {"success": True, "result": result}
-                
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-    
-    def final_quality_check(self, notion_result: Any, prd_result: Any) -> Dict[str, Any]:
-        """최종 품질 검사"""
-        try:
-            quality_prompt = f"""
-생성된 노션 프로젝트와 PRD의 최종 품질을 평가해주세요.
-
-**노션 프로젝트:**
-{json.dumps(notion_result, ensure_ascii=False, indent=2)}
-
-**PRD 결과:**
-{json.dumps(prd_result, ensure_ascii=False, indent=2)}
-
-다음 JSON 형식으로 최종 평가해주세요:
-{{
-    "final_score": 전체_평균점수,
-    "is_production_ready": true/false,
-    "quality_breakdown": {{
-        "notion_quality": 점수,
-        "prd_quality": 점수,
-        "consistency": 점수,
-        "completeness": 점수
-    }},
-    "final_recommendations": ["최종권장사항1", "최종권장사항2"]
-}}
-
-평가 기준: 각 1-10점 척도 (10점 만점)
-"""
-            
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "당신은 프로젝트 산출물의 최종 품질을 평가하는 전문가입니다."},
-                    {"role": "user", "content": quality_prompt}
-                ],
-                temperature=0.2,
-                max_tokens=1500
-            )
-            
-            result = response.choices[0].message.content
-            try:
-                parsed_result = json.loads(result)
-                return {"success": True, "result": parsed_result}
-            except json.JSONDecodeError:
-                return {"success": True, "result": {"final_score": 6.0, "is_production_ready": True}}
-                
-        except Exception as e:
-            return {"success": False, "error": str(e)}
     
     def generate_gold_standard_sample(self, meeting_transcript: str, metadata: Dict) -> Dict[str, Any]:
-        """하나의 회의록에 대한 완전한 골드 스탠다드 생성"""
+        """하나의 회의록에 대한 노션 프로젝트 골드 스탠다드 생성 (PRD 제외)"""
         
         # Stage 1: 초기 노션 응답 생성
         print("      🎯 Stage 1: 초기 노션 프로젝트 생성...", flush=True)
@@ -354,27 +326,22 @@ class TtalkkakGoldStandardGenerator:
                 break
         
         if current_score >= 7.0:
-            print(f"      ✅ Stage 3: 목표 품질 달성! (최종 점수: {current_score}/10, 반복 횟수: {iterations_used})")
+            print(f"      ✅ 목표 품질 달성! (최종 점수: {current_score}/10, 반복 횟수: {iterations_used})")
         else:
-            print(f"      ⚠️ Stage 3: 최대 시도 후에도 목표 미달 (최종 점수: {current_score}/10, 반복 횟수: {iterations_used})")
+            print(f"      ⚠️ 최대 시도 후에도 목표 미달 (최종 점수: {current_score}/10, 반복 횟수: {iterations_used})")
         
-        # Stage 4: PRD 생성
-        print("      📋 Stage 4: PRD 생성...")
-        prd_result = self.generate_prd_from_notion(final_notion)
-        if not prd_result["success"]:
-            return {"success": False, "error": f"Stage 4 실패: {prd_result['error']}"}
-        
-        # Stage 5: 최종 품질 검사
-        print("      🔍 Stage 5: 최종 품질 검사...")
-        final_quality = self.final_quality_check(final_notion, prd_result["result"])
-        if not final_quality["success"]:
-            return {"success": False, "error": f"Stage 5 실패: {final_quality['error']}"}
+        # 7점 이상이면 추가 검증 없이 바로 저장
+        final_quality_result = {
+            "final_score": current_score,
+            "is_production_ready": current_score >= 7.0,
+            "quality_breakdown": evaluation["result"] if evaluation["success"] else {},
+            "skip_final_check": current_score >= 7.0
+        }
         
         return {
             "success": True,
             "notion_result": final_notion,
-            "prd_result": prd_result["result"],
-            "final_quality": final_quality["result"],
+            "final_quality": final_quality_result,
             "iterations_used": iterations_used
         }
 
@@ -444,12 +411,11 @@ def process_dataset_batch(generator: TtalkkakGoldStandardGenerator,
                 # 품질 점수 관계없이 모든 결과 저장
                 is_high_quality = quality_score >= 7.0
                 
-                # 개별 파일 결과 저장 (LLM 출력만)
+                # 개별 파일 결과 저장 (노션 출력만)
                 individual_result = {
                     "id": f"{dataset_type}_{i+1:03d}",
                     "source_dir": dir_name,
                     "notion_output": result["notion_result"],
-                    "prd_output": result["prd_result"],
                     "quality_metrics": {
                         "final_score": quality_score,
                         "is_production_ready": is_production_ready,
