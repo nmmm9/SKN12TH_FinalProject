@@ -2,7 +2,7 @@
  * JIRA 연동 서비스
  * Task Master에서 생성된 업무를 JIRA 이슈로 자동 생성
  */
-
+import axiosInstance from '../lib/axios';
 import { PrismaClient } from '@prisma/client';
 // import fetch from 'node-fetch'; // Node.js 18+ has built-in fetch
 
@@ -24,6 +24,7 @@ interface JiraCreateIssueRequest {
   description: string;
   issueType: string;
   priority: string;
+  projectKey?: string | undefined;  // ← 새로 추가
   assignee?: string | undefined;
   parentKey?: string | undefined; // 서브태스크인 경우
   startDate?: string | undefined; // YYYY-MM-DD 형식
@@ -125,7 +126,72 @@ class JiraService {
       return null;
     }
   }
+  public async exchangeCodeForToken(code: string) {
+    const response = await fetch('https://auth.atlassian.com/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        grant_type: 'authorization_code',
+        client_id: process.env.JIRA_CLIENT_ID,
+        client_secret: process.env.JIRA_CLIENT_SECRET,
+        code,
+        redirect_uri: `${process.env.APP_URL}/auth/jira/callback`,
+      }),
+    });
 
+    if (!response.ok) {
+      throw new Error(`JIRA OAuth 토큰 요청 실패: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data; // { access_token, refresh_token, ... }
+  }
+
+
+  /**
+   * JIRA OAuth 토큰 DB 저장
+   */
+  public async saveJiraTokens(
+    tenantId: string,
+    userId: string,
+    tokens: any
+  ) {
+    const encryptedAccess = this.encrypt(tokens.access_token);
+    const encryptedRefresh = this.encrypt(tokens.refresh_token);
+
+    const existing = await this.prisma.integration.findFirst({
+      where: {
+        userId,
+        serviceType: 'JIRA',
+        tenantId,
+        isActive: true
+      }
+    });
+
+    if (existing) {
+      await this.prisma.integration.update({
+        where: { id: existing.id },
+        data: {
+          accessToken: encryptedAccess,
+          refreshToken: encryptedRefresh,
+          isActive: true
+        }
+      });
+    } else {
+      await this.prisma.integration.create({
+        data: {
+          userId,
+          tenantId,
+          serviceType: 'JIRA',
+          accessToken: encryptedAccess,
+          refreshToken: encryptedRefresh,
+          isActive: true
+        }
+      });
+    }
+  }
   /**
    * 테넌트의 JIRA 설정 조회
    */
@@ -321,7 +387,7 @@ class JiraService {
     const issueData: any = {
       fields: {
         project: {
-          key: jiraProject.jiraProjectKey
+          key: request.projectKey || jiraProject.jiraProjectKey  // 요청에서 온 키 우선 사용
         },
         summary: request.summary,
         description: {
@@ -437,14 +503,15 @@ class JiraService {
     projectData: {
       title: string;
       overview: string;
+      projectKey?: string;
       tasks: Array<{
         title: string;
         description: string;
         priority: string;
         estimated_hours: number;
         complexity: string;
-        startDate?: string;
-        dueDate?: string;
+        start_date?: string;
+        deadline?: string;
         subtasks?: Array<{
           title: string;
           description: string;
@@ -452,6 +519,7 @@ class JiraService {
           startDate?: string;
           dueDate?: string;
         }>;
+      
       }>;
     }
   ) {
@@ -549,8 +617,9 @@ class JiraService {
             issueType: issueTypes.epic || 'Task',
             priority: task.priority || 'MEDIUM',
             epicName: task.title,
-            startDate: task.startDate,
-            dueDate: task.dueDate
+            startDate: task.start_date,
+            dueDate: task.deadline,
+            projectKey: targetProject.key,
           });
           
           console.log(`✅ Epic 생성 (TaskMaster Task): ${epicIssue.key} - ${task.title}`);
@@ -574,8 +643,8 @@ class JiraService {
                   issueType: issueTypes.task || 'Task',
                   priority: 'MEDIUM',
                   // parentKey 제거 - 독립적인 Task로 생성
-                  startDate: subtask.startDate,
-                  dueDate: subtask.dueDate
+                  startDate: task.start_date,
+                  dueDate: task.deadline
                 });
                 
                 console.log(`✅ Task 생성 (TaskMaster Subtask): ${jiraTaskIssue.key} - ${subtask.title}`);
