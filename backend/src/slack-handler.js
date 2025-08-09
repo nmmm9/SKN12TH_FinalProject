@@ -551,7 +551,9 @@ app.action('connect_notion_button', async ({ ack, body, respond }) => {
   await ack();
   
   const userId = body.user.id;
-  const tenantSlug = 'dev-tenant'; // 임시로 고정, 나중에 동적으로 설정
+  const teamId = body.team?.id || body.user.team_id;
+  // Slack workspace ID를 기반으로 tenant 찾기 (또는 기본값 사용)
+  const tenantSlug = teamId ? `slack-${teamId}`.toLowerCase() : 'default-tenant';
   
   // OAuth URL 생성
   const state = Buffer.from(JSON.stringify({
@@ -662,7 +664,8 @@ app.action('connect_jira_button', async ({ ack, body, respond }) => {
     }
     
     const userId = body.user.id;
-    const tenantSlug = 'dev-tenant'; // 임시로 고정, 나중에 동적으로 설정
+    const teamId = body.team?.id || body.user.team_id;
+    const tenantSlug = teamId ? `slack-${teamId}`.toLowerCase() : 'default-tenant';
     
     // OAuth URL 생성
     const state = Buffer.from(JSON.stringify({
@@ -748,7 +751,8 @@ app.action('check_integrations_button', async ({ ack, body, respond }) => {
   
   try {
     const slackUserId = body.user.id;
-    const tenantSlug = 'dev-tenant'; // 슬럭
+    const teamId = body.team?.id || body.user.team_id;
+    const tenantSlug = teamId ? `slack-${teamId}`.toLowerCase() : 'default-tenant';
     
     // Services import
     const { NotionService } = require('./services/notion-service');
@@ -1128,7 +1132,12 @@ app.event('file_shared', async ({ event, ack, say, client }) => {
 // 회의록 전용 처리 함수 (완전 새 버전)
 async function processTranscriptWithAI(transcript, client, channelId) {
   const slackUserId = channelId; // DM에서는 channelId가 userId와 같음
+<<<<<<< Updated upstream
   const tenantSlug = 'dev-tenant'; // 임시로 고정
+=======
+  const teamId = event.team || event.user_team || 'default';
+  const tenantSlug = `slack-${teamId}`.toLowerCase();
+>>>>>>> Stashed changes
   
   try {
     console.log('📝 회의록 직접 처리 시작:', transcript.substring(0, 100) + '...');
@@ -1974,7 +1983,12 @@ async function checkRecentFiles(client, userId, projectName) {
           const prisma = new PrismaClient();
           
           // tenant와 user 정보 조회
+<<<<<<< Updated upstream
           const tenantSlug = 'dev-tenant';
+=======
+          const teamId = body.team?.id || 'default';
+          const tenantSlug = `slack-${teamId}`.toLowerCase();
+>>>>>>> Stashed changes
           const tenant = await prisma.tenant.findUnique({
             where: { slug: tenantSlug }
           });
@@ -2100,13 +2114,24 @@ async function checkRecentFiles(client, userId, projectName) {
         }
       } else {
         console.log('❌ Tenant 찾을 수 없음');
+<<<<<<< Updated upstream
         notionUrl = `${process.env.APP_URL}/auth/notion/dev-tenant?userId=${userId}`;
+=======
+        const teamId = body.team?.id || 'default';
+        const tenantSlug = `slack-${teamId}`.toLowerCase();
+        notionUrl = `${process.env.APP_URL}/auth/notion/${tenantSlug}?userId=${userId}`;
+>>>>>>> Stashed changes
         notionButtonText = '🔗 Notion 연결하기';
       }
     } catch (notionError) {
       console.error('❌ Notion 처리 오류:', notionError);
       // 오류 발생 시에도 연동 버튼은 표시
+<<<<<<< Updated upstream
       const tenantSlug = 'dev-tenant';
+=======
+      const teamId = body.team?.id || 'default';
+      const tenantSlug = `slack-${teamId}`.toLowerCase();
+>>>>>>> Stashed changes
       notionUrl = `${process.env.APP_URL}/auth/notion/${tenantSlug}?userId=${userId}`;
       notionButtonText = '🔗 Notion 연결하기 (오류 복구)';
     }
@@ -2123,7 +2148,8 @@ async function checkRecentFiles(client, userId, projectName) {
           const jiraService = new JiraService(prisma);
           
           // tenant와 user 정보 조회
-          const tenantSlug = 'dev-tenant';
+          const teamId = body.team?.id || 'default';
+          const tenantSlug = `slack-${teamId}`.toLowerCase();
           const tenant = await prisma.tenant.findUnique({
             where: { slug: tenantSlug }
           });
@@ -2163,7 +2189,12 @@ async function checkRecentFiles(client, userId, projectName) {
           }
         } catch (error) {
           console.error('JIRA 버튼 생성 실패:', error);
+<<<<<<< Updated upstream
           const tenantSlug = 'dev-tenant';
+=======
+          const teamId = body.team?.id || 'default';
+          const tenantSlug = `slack-${teamId}`.toLowerCase();
+>>>>>>> Stashed changes
           jiraUrl = `${process.env.APP_URL}/auth/jira/${tenantSlug}?userId=${userId}`;
           jiraButtonText = '🔗 JIRA 연결하기';
         }
@@ -2238,7 +2269,11 @@ async function checkRecentFiles(client, userId, projectName) {
                     type: 'plain_text',
                     text: '🔗 Notion 연결하기 (데모)'
                   },
+<<<<<<< Updated upstream
                   url: `${process.env.APP_URL}/auth/notion/dev-tenant?userId=${userId}`,
+=======
+                  url: `${process.env.APP_URL}/auth/notion/${tenantSlug}?userId=${userId}`,
+>>>>>>> Stashed changes
                   action_id: 'connect_notion_demo'
                 },
                 {
@@ -2247,7 +2282,11 @@ async function checkRecentFiles(client, userId, projectName) {
                     type: 'plain_text',
                     text: '🔗 JIRA 연결하기 (데모)'
                   },
+<<<<<<< Updated upstream
                   url: `${process.env.APP_URL}/auth/jira/dev-tenant?userId=${userId}`,
+=======
+                  url: `${process.env.APP_URL}/auth/jira/${tenantSlug}?userId=${userId}`,
+>>>>>>> Stashed changes
                   action_id: 'connect_jira_demo'
                 }
               ]

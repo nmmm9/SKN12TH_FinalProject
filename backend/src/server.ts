@@ -1598,31 +1598,44 @@ app.get('/db-test', async (req, res) => {
 // 개발용 테넌트 생성 및 테스트
 app.post('/dev/setup-tenant', async (req, res) => {
   try {
+    // 요청에서 tenant 정보 가져오기
+    const { tenantSlug, tenantName, userEmail, userName } = req.body;
+    
+    if (!tenantSlug) {
+      return res.status(400).json({ 
+        status: 'error',
+        message: 'tenantSlug is required'
+      });
+    }
+
     const tenant = await prisma.tenant.upsert({
-      where: { slug: 'dev-tenant' },
+      where: { slug: tenantSlug },
       update: {},
       create: {
-        name: 'Development Tenant',
-        slug: 'dev-tenant'
+        name: tenantName || `${tenantSlug} Tenant`,
+        slug: tenantSlug
       }
     });
 
-    // 개발용 사용자 생성
-    const user = await prisma.user.upsert({
-      where: {
-        tenantId_email: {
+    // 사용자 생성 (옵션)
+    let user = null;
+    if (userEmail) {
+      user = await prisma.user.upsert({
+        where: {
+          tenantId_email: {
+            tenantId: tenant.id,
+            email: userEmail
+          }
+        },
+        update: {},
+        create: {
           tenantId: tenant.id,
-          email: 'dev@example.com'
+          email: userEmail,
+          name: userName || userEmail.split('@')[0],
+          role: 'OWNER'
         }
-      },
-      update: {},
-      create: {
-        tenantId: tenant.id,
-        email: 'dev@example.com',
-        name: 'Development User',
-        role: 'OWNER'
-      }
-    });
+      });
+    }
 
     res.json({ 
       status: 'success',

@@ -142,7 +142,7 @@ export class SimpleTenantMiddleware {
   }
 
   /**
-   * 개발용 테넌트 자동 생성 미들웨어
+   * 개발용 테넌트 자동 생성 미들웨어 (동적 multi-tenant 지원)
    */
   createDevTenant = async (
     req: Request,
@@ -150,28 +150,41 @@ export class SimpleTenantMiddleware {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const devTenantSlug = 'dev-tenant';
+      // 다양한 소스에서 tenant 정보 가져오기 (우선순위 순)
+      const tenantSlug = (req.headers['x-tenant-id'] as string) ||
+                        (req.headers['x-tenant-slug'] as string) ||
+                        (req.query.tenant as string) ||
+                        req.body?.tenantSlug ||
+                        'dev-tenant';  // 기본값
+      
+      logger.debug(`Tenant slug requested: ${tenantSlug}`);
       
       let tenant = await this.prisma.tenant.findUnique({
-        where: { slug: devTenantSlug }
+        where: { slug: tenantSlug }
       });
 
       if (!tenant) {
+        // 테넌트가 없으면 자동 생성 (개발 환경용)
+        const tenantName = tenantSlug.split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+        
         tenant = await this.prisma.tenant.create({
           data: {
-            name: 'Development Tenant',
-            slug: devTenantSlug
+            name: `${tenantName} Tenant`,
+            slug: tenantSlug
           }
         });
-        logger.info(`Created development tenant: ${tenant.id}`);
+        logger.info(`Created new tenant: ${tenant.name} (${tenant.slug})`);
       }
 
       req.tenant = tenant;
       req.tenantId = tenant.id;
+      logger.debug(`Active tenant: ${tenant.name} (${tenant.slug})`);
       next();
     } catch (error) {
-      logger.error('Error creating dev tenant:', error);
-      res.status(500).json({ error: 'Failed to setup dev tenant' });
+      logger.error('Error in createDevTenant:', error);
+      res.status(500).json({ error: 'Failed to setup tenant' });
     }
   };
 }
